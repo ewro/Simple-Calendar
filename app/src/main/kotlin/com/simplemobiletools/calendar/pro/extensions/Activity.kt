@@ -8,7 +8,9 @@ import com.simplemobiletools.calendar.pro.helpers.*
 import com.simplemobiletools.calendar.pro.models.Event
 import com.simplemobiletools.commons.activities.BaseSimpleActivity
 import com.simplemobiletools.commons.dialogs.RadioGroupDialog
-import com.simplemobiletools.commons.extensions.*
+import com.simplemobiletools.commons.extensions.hideKeyboard
+import com.simplemobiletools.commons.extensions.sharePathIntent
+import com.simplemobiletools.commons.extensions.toast
 import com.simplemobiletools.commons.helpers.ensureBackgroundThread
 import com.simplemobiletools.commons.models.RadioItem
 import java.io.File
@@ -24,11 +26,9 @@ fun BaseSimpleActivity.shareEvents(ids: List<Long>) {
         }
 
         val events = eventsDB.getEventsWithIds(ids) as ArrayList<Event>
-        getFileOutputStream(file.toFileDirItem(this), true) {
-            IcsExporter().exportEvents(this, it, events, false) {
-                if (it == IcsExporter.ExportResult.EXPORT_OK) {
-                    sharePathIntent(file.absolutePath, BuildConfig.APPLICATION_ID)
-                }
+        IcsExporter().exportEvents(this, file, events, false) {
+            if (it == IcsExporter.ExportResult.EXPORT_OK) {
+                sharePathIntent(file.absolutePath, BuildConfig.APPLICATION_ID)
             }
         }
     }

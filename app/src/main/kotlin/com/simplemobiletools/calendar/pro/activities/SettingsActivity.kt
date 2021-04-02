@@ -1,10 +1,9 @@
 package com.simplemobiletools.calendar.pro.activities
 
-import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.content.res.Resources
 import android.media.AudioManager
-import android.media.RingtoneManager
 import android.os.Bundle
 import android.view.Menu
 import com.simplemobiletools.calendar.pro.R
@@ -21,19 +20,19 @@ import com.simplemobiletools.commons.models.RadioItem
 import kotlinx.android.synthetic.main.activity_settings.*
 import org.joda.time.DateTime
 import java.io.File
-import java.io.InputStream
 import java.util.*
 
 class SettingsActivity : SimpleActivity() {
     private val GET_RINGTONE_URI = 1
-    private val PICK_IMPORT_SOURCE_INTENT = 2
 
-    private var mStoredAdjustedPrimaryColor = 0
+    lateinit var res: Resources
+    private var mStoredPrimaryColor = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
-        mStoredAdjustedPrimaryColor = getAdjustedPrimaryColor()
+        res = resources
+        mStoredPrimaryColor = config.primaryColor
     }
 
     override fun onResume() {
@@ -43,17 +42,16 @@ class SettingsActivity : SimpleActivity() {
 
     private fun setupSettingItems() {
         setupCustomizeColors()
-        setupCustomizeNotifications()
         setupUseEnglish()
         setupManageEventTypes()
         setupHourFormat()
         setupSundayFirst()
-        setupHighlightWeekends()
         setupDeleteAllEvents()
         setupReplaceDescription()
         setupWeekNumbers()
         setupShowGrid()
         setupWeeklyStart()
+        setupWeeklyEnd()
         setupVibrate()
         setupReminderSound()
         setupReminderAudioStream()
@@ -75,7 +73,6 @@ class SettingsActivity : SimpleActivity() {
         setupCustomizeWidgetColors()
         setupViewToOpenFromListWidget()
         setupDimEvents()
-        setupAllowChangingTimeZones()
         updateTextColors(settings_holder)
         checkPrimaryColor()
         setupSectionColors()
@@ -86,7 +83,7 @@ class SettingsActivity : SimpleActivity() {
 
     override fun onPause() {
         super.onPause()
-        mStoredAdjustedPrimaryColor = getAdjustedPrimaryColor()
+        mStoredPrimaryColor = config.primaryColor
     }
 
     override fun onStop() {
@@ -107,19 +104,16 @@ class SettingsActivity : SimpleActivity() {
         if (requestCode == GET_RINGTONE_URI && resultCode == RESULT_OK && resultData != null) {
             val newAlarmSound = storeNewYourAlarmSound(resultData)
             updateReminderSound(newAlarmSound)
-        } else if (requestCode == PICK_IMPORT_SOURCE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
-            val inputStream = contentResolver.openInputStream(resultData.data!!)
-            parseFile(inputStream)
         }
     }
 
     private fun checkPrimaryColor() {
-        if (getAdjustedPrimaryColor() != mStoredAdjustedPrimaryColor) {
+        if (config.primaryColor != mStoredPrimaryColor) {
             ensureBackgroundThread {
                 val eventTypes = eventsHelper.getEventTypesSync()
                 if (eventTypes.filter { it.caldavCalendarId == 0 }.size == 1) {
                     val eventType = eventTypes.first { it.caldavCalendarId == 0 }
-                    eventType.color = getAdjustedPrimaryColor()
+                    eventType.color = config.primaryColor
                     eventsHelper.insertOrUpdateEventTypeSync(eventType)
                 }
             }
@@ -129,7 +123,7 @@ class SettingsActivity : SimpleActivity() {
     private fun setupSectionColors() {
         val adjustedPrimaryColor = getAdjustedPrimaryColor()
         arrayListOf(reminders_label, caldav_label, weekly_view_label, monthly_view_label, simple_event_list_label, widgets_label, events_label,
-            new_events_label, migrating_label).forEach {
+                new_events_label, migrating_label).forEach {
             it.setTextColor(adjustedPrimaryColor)
         }
     }
@@ -137,13 +131,6 @@ class SettingsActivity : SimpleActivity() {
     private fun setupCustomizeColors() {
         settings_customize_colors_holder.setOnClickListener {
             startCustomizationActivity()
-        }
-    }
-
-    private fun setupCustomizeNotifications() {
-        settings_customize_notifications_holder.beVisibleIf(isOreoPlus())
-        settings_customize_notifications_holder.setOnClickListener {
-            launchCustomizeNotificationsIntent()
         }
     }
 
@@ -285,14 +272,6 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
-    private fun setupHighlightWeekends() {
-        settings_highlight_weekends.isChecked = config.highlightWeekends
-        settings_highlight_weekends_holder.setOnClickListener {
-            settings_highlight_weekends.toggle()
-            config.highlightWeekends = settings_highlight_weekends.isChecked
-        }
-    }
-
     private fun setupDeleteAllEvents() {
         settings_delete_all_events_holder.setOnClickListener {
             ConfirmationDialog(this, messageId = R.string.delete_all_events_confirmation) {
@@ -313,11 +292,32 @@ class SettingsActivity : SimpleActivity() {
         settings_start_weekly_at.text = getHoursString(config.startWeeklyAt)
         settings_start_weekly_at_holder.setOnClickListener {
             val items = ArrayList<RadioItem>()
-            (0..16).mapTo(items) { RadioItem(it, getHoursString(it)) }
+            (0..24).mapTo(items) { RadioItem(it, getHoursString(it)) }
 
             RadioGroupDialog(this@SettingsActivity, items, config.startWeeklyAt) {
-                config.startWeeklyAt = it as Int
-                settings_start_weekly_at.text = getHoursString(it)
+                if (it as Int >= config.endWeeklyAt) {
+                    toast(R.string.day_end_before_start)
+                } else {
+                    config.startWeeklyAt = it
+                    settings_start_weekly_at.text = getHoursString(it)
+                }
+            }
+        }
+    }
+
+    private fun setupWeeklyEnd() {
+        settings_end_weekly_at.text = getHoursString(config.endWeeklyAt)
+        settings_end_weekly_at_holder.setOnClickListener {
+            val items = ArrayList<RadioItem>()
+            (0..24).mapTo(items) { RadioItem(it, getHoursString(it)) }
+
+            RadioGroupDialog(this@SettingsActivity, items, config.endWeeklyAt) {
+                if (it as Int <= config.startWeeklyAt) {
+                    toast(R.string.day_end_before_start)
+                } else {
+                    config.endWeeklyAt = it
+                    settings_end_weekly_at.text = getHoursString(it)
+                }
             }
         }
     }
@@ -339,18 +339,17 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupReminderSound() {
-        settings_reminder_sound_holder.beGoneIf(isOreoPlus())
         settings_reminder_sound.text = config.reminderSoundTitle
 
         settings_reminder_sound_holder.setOnClickListener {
-            SelectAlarmSoundDialog(this, config.reminderSoundUri, config.reminderAudioStream, GET_RINGTONE_URI, RingtoneManager.TYPE_NOTIFICATION, false,
-                onAlarmPicked = {
-                    if (it != null) {
-                        updateReminderSound(it)
-                    }
-                }, onAlarmSoundDeleted = {
+            SelectAlarmSoundDialog(this, config.reminderSoundUri, config.reminderAudioStream, GET_RINGTONE_URI, ALARM_SOUND_TYPE_NOTIFICATION, false,
+                    onAlarmPicked = {
+                        if (it != null) {
+                            updateReminderSound(it)
+                        }
+                    }, onAlarmSoundDeleted = {
                 if (it.uri == config.reminderSoundUri) {
-                    val defaultAlarm = getDefaultAlarmSound(RingtoneManager.TYPE_NOTIFICATION)
+                    val defaultAlarm = getDefaultAlarmSound(ALARM_SOUND_TYPE_NOTIFICATION)
                     updateReminderSound(defaultAlarm)
                 }
             })
@@ -367,10 +366,10 @@ class SettingsActivity : SimpleActivity() {
         settings_reminder_audio_stream.text = getAudioStreamText()
         settings_reminder_audio_stream_holder.setOnClickListener {
             val items = arrayListOf(
-                RadioItem(AudioManager.STREAM_ALARM, getString(R.string.alarm_stream)),
-                RadioItem(AudioManager.STREAM_SYSTEM, getString(R.string.system_stream)),
-                RadioItem(AudioManager.STREAM_NOTIFICATION, getString(R.string.notification_stream)),
-                RadioItem(AudioManager.STREAM_RING, getString(R.string.ring_stream)))
+                    RadioItem(AudioManager.STREAM_ALARM, res.getString(R.string.alarm_stream)),
+                    RadioItem(AudioManager.STREAM_SYSTEM, res.getString(R.string.system_stream)),
+                    RadioItem(AudioManager.STREAM_NOTIFICATION, res.getString(R.string.notification_stream)),
+                    RadioItem(AudioManager.STREAM_RING, res.getString(R.string.ring_stream)))
 
             RadioGroupDialog(this@SettingsActivity, items, config.reminderAudioStream) {
                 config.reminderAudioStream = it as Int
@@ -440,7 +439,7 @@ class SettingsActivity : SimpleActivity() {
         settings_default_reminder_1.text = getFormattedMinutes(config.defaultReminder1)
         settings_default_reminder_1_holder.setOnClickListener {
             showPickSecondsDialogHelper(config.defaultReminder1) {
-                config.defaultReminder1 = if (it == -1 || it == 0) it else it / 60
+                config.defaultReminder1 = if (it <= 0) it else it / 60
                 settings_default_reminder_1.text = getFormattedMinutes(config.defaultReminder1)
             }
         }
@@ -450,7 +449,7 @@ class SettingsActivity : SimpleActivity() {
         settings_default_reminder_2.text = getFormattedMinutes(config.defaultReminder2)
         settings_default_reminder_2_holder.setOnClickListener {
             showPickSecondsDialogHelper(config.defaultReminder2) {
-                config.defaultReminder2 = if (it == -1 || it == 0) it else it / 60
+                config.defaultReminder2 = if (it <= 0) it else it / 60
                 settings_default_reminder_2.text = getFormattedMinutes(config.defaultReminder2)
             }
         }
@@ -460,7 +459,7 @@ class SettingsActivity : SimpleActivity() {
         settings_default_reminder_3.text = getFormattedMinutes(config.defaultReminder3)
         settings_default_reminder_3_holder.setOnClickListener {
             showPickSecondsDialogHelper(config.defaultReminder3) {
-                config.defaultReminder3 = if (it == -1 || it == 0) it else it / 60
+                config.defaultReminder3 = if (it <= 0) it else it / 60
                 settings_default_reminder_3.text = getFormattedMinutes(config.defaultReminder3)
             }
         }
@@ -503,10 +502,9 @@ class SettingsActivity : SimpleActivity() {
         settings_font_size.text = getFontSizeText()
         settings_font_size_holder.setOnClickListener {
             val items = arrayListOf(
-                RadioItem(FONT_SIZE_SMALL, getString(R.string.small)),
-                RadioItem(FONT_SIZE_MEDIUM, getString(R.string.medium)),
-                RadioItem(FONT_SIZE_LARGE, getString(R.string.large)),
-                RadioItem(FONT_SIZE_EXTRA_LARGE, getString(R.string.extra_large)))
+                    RadioItem(FONT_SIZE_SMALL, res.getString(R.string.small)),
+                    RadioItem(FONT_SIZE_MEDIUM, res.getString(R.string.medium)),
+                    RadioItem(FONT_SIZE_LARGE, res.getString(R.string.large)))
 
             RadioGroupDialog(this@SettingsActivity, items, config.fontSize) {
                 config.fontSize = it as Int
@@ -515,6 +513,12 @@ class SettingsActivity : SimpleActivity() {
             }
         }
     }
+
+    private fun getFontSizeText() = getString(when (config.fontSize) {
+        FONT_SIZE_SMALL -> R.string.small
+        FONT_SIZE_MEDIUM -> R.string.medium
+        else -> R.string.large
+    })
 
     private fun setupCustomizeWidgetColors() {
         settings_customize_widget_colors_holder.setOnClickListener {
@@ -529,12 +533,12 @@ class SettingsActivity : SimpleActivity() {
         settings_list_widget_view_to_open.text = getDefaultViewText()
         settings_list_widget_view_to_open_holder.setOnClickListener {
             val items = arrayListOf(
-                RadioItem(DAILY_VIEW, getString(R.string.daily_view)),
-                RadioItem(WEEKLY_VIEW, getString(R.string.weekly_view)),
-                RadioItem(MONTHLY_VIEW, getString(R.string.monthly_view)),
-                RadioItem(YEARLY_VIEW, getString(R.string.yearly_view)),
-                RadioItem(EVENTS_LIST_VIEW, getString(R.string.simple_event_list)),
-                RadioItem(LAST_VIEW, getString(R.string.last_view)))
+                    RadioItem(DAILY_VIEW, res.getString(R.string.daily_view)),
+                    RadioItem(WEEKLY_VIEW, res.getString(R.string.weekly_view)),
+                    RadioItem(MONTHLY_VIEW, res.getString(R.string.monthly_view)),
+                    RadioItem(YEARLY_VIEW, res.getString(R.string.yearly_view)),
+                    RadioItem(EVENTS_LIST_VIEW, res.getString(R.string.simple_event_list)),
+                    RadioItem(LAST_VIEW, res.getString(R.string.last_view)))
 
             RadioGroupDialog(this@SettingsActivity, items, config.listWidgetViewToOpen) {
                 config.listWidgetViewToOpen = it as Int
@@ -558,14 +562,6 @@ class SettingsActivity : SimpleActivity() {
         settings_dim_past_events_holder.setOnClickListener {
             settings_dim_past_events.toggle()
             config.dimPastEvents = settings_dim_past_events.isChecked
-        }
-    }
-
-    private fun setupAllowChangingTimeZones() {
-        settings_allow_changing_time_zones.isChecked = config.allowChangingTimeZones
-        settings_allow_changing_time_zones_holder.setOnClickListener {
-            settings_allow_changing_time_zones.toggle()
-            config.allowChangingTimeZones = settings_allow_changing_time_zones.isChecked
         }
     }
 
@@ -663,7 +659,6 @@ class SettingsActivity : SimpleActivity() {
                 put(TEXT_COLOR, config.textColor)
                 put(BACKGROUND_COLOR, config.backgroundColor)
                 put(PRIMARY_COLOR, config.primaryColor)
-                put(ACCENT_COLOR, config.accentColor)
                 put(APP_ICON_COLOR, config.appIconColor)
                 put(USE_ENGLISH, config.useEnglish)
                 put(WAS_USE_ENGLISH_TOGGLED, config.wasUseEnglishToggled)
@@ -671,6 +666,7 @@ class SettingsActivity : SimpleActivity() {
                 put(WIDGET_TEXT_COLOR, config.widgetTextColor)
                 put(WEEK_NUMBERS, config.showWeekNumbers)
                 put(START_WEEKLY_AT, config.startWeeklyAt)
+                put(END_WEEKLY_AT, config.endWeeklyAt)
                 put(VIBRATE, config.vibrateOnReminder)
                 put(LAST_EVENT_REMINDER_MINUTES, config.lastEventReminderMinutes1)
                 put(LAST_EVENT_REMINDER_MINUTES_2, config.lastEventReminderMinutes2)
@@ -683,7 +679,6 @@ class SettingsActivity : SimpleActivity() {
                 put(SHOW_GRID, config.showGrid)
                 put(LOOP_REMINDERS, config.loopReminders)
                 put(DIM_PAST_EVENTS, config.dimPastEvents)
-                put(ALLOW_CHANGING_TIME_ZONES, config.allowChangingTimeZones)
                 put(USE_PREVIOUS_EVENT_REMINDERS, config.usePreviousEventReminders)
                 put(DEFAULT_REMINDER_1, config.defaultReminder1)
                 put(DEFAULT_REMINDER_2, config.defaultReminder2)
@@ -695,27 +690,22 @@ class SettingsActivity : SimpleActivity() {
                 put(SNOOZE_TIME, config.snoozeTime)
                 put(USE_24_HOUR_FORMAT, config.use24HourFormat)
                 put(SUNDAY_FIRST, config.isSundayFirst)
-                put(HIGHLIGHT_WEEKENDS, config.highlightWeekends)
             }
 
-            exportSettings(configItems)
+            exportSettings(configItems, "calendar-settings.txt")
         }
     }
 
     private fun setupImportSettings() {
         settings_import_holder.setOnClickListener {
-            if (isQPlus()) {
-                Intent(Intent.ACTION_GET_CONTENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "text/plain"
-                    startActivityForResult(this, PICK_IMPORT_SOURCE_INTENT)
-                }
-            } else {
-                handlePermission(PERMISSION_READ_STORAGE) {
-                    if (it) {
-                        FilePickerDialog(this) {
-                            ensureBackgroundThread {
-                                parseFile(File(it).inputStream())
+            handlePermission(PERMISSION_READ_STORAGE) {
+                if (it) {
+                    FilePickerDialog(this) {
+                        ensureBackgroundThread {
+                            try {
+                                parseFile(it)
+                            } catch (e: Exception) {
+                                showErrorToast(e)
                             }
                         }
                     }
@@ -724,12 +714,8 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
-    private fun parseFile(inputStream: InputStream?) {
-        if (inputStream == null) {
-            toast(R.string.unknown_error_occurred)
-            return
-        }
-
+    private fun parseFile(path: String) {
+        val inputStream = File(path).inputStream()
         var importedItems = 0
         val configValues = LinkedHashMap<String, Any>()
         inputStream.bufferedReader().use {
@@ -753,7 +739,6 @@ class SettingsActivity : SimpleActivity() {
                 TEXT_COLOR -> config.textColor = value.toInt()
                 BACKGROUND_COLOR -> config.backgroundColor = value.toInt()
                 PRIMARY_COLOR -> config.primaryColor = value.toInt()
-                ACCENT_COLOR -> config.accentColor = value.toInt()
                 APP_ICON_COLOR -> {
                     if (getAppIconColors().contains(value.toInt())) {
                         config.appIconColor = value.toInt()
@@ -766,6 +751,7 @@ class SettingsActivity : SimpleActivity() {
                 WIDGET_TEXT_COLOR -> config.widgetTextColor = value.toInt()
                 WEEK_NUMBERS -> config.showWeekNumbers = value.toBoolean()
                 START_WEEKLY_AT -> config.startWeeklyAt = value.toInt()
+                END_WEEKLY_AT -> config.endWeeklyAt = value.toInt()
                 VIBRATE -> config.vibrateOnReminder = value.toBoolean()
                 LAST_EVENT_REMINDER_MINUTES -> config.lastEventReminderMinutes1 = value.toInt()
                 LAST_EVENT_REMINDER_MINUTES_2 -> config.lastEventReminderMinutes2 = value.toInt()
@@ -778,7 +764,6 @@ class SettingsActivity : SimpleActivity() {
                 SHOW_GRID -> config.showGrid = value.toBoolean()
                 LOOP_REMINDERS -> config.loopReminders = value.toBoolean()
                 DIM_PAST_EVENTS -> config.dimPastEvents = value.toBoolean()
-                ALLOW_CHANGING_TIME_ZONES -> config.allowChangingTimeZones = value.toBoolean()
                 USE_PREVIOUS_EVENT_REMINDERS -> config.usePreviousEventReminders = value.toBoolean()
                 DEFAULT_REMINDER_1 -> config.defaultReminder1 = value.toInt()
                 DEFAULT_REMINDER_2 -> config.defaultReminder2 = value.toInt()
@@ -790,14 +775,11 @@ class SettingsActivity : SimpleActivity() {
                 SNOOZE_TIME -> config.snoozeTime = value.toInt()
                 USE_24_HOUR_FORMAT -> config.use24HourFormat = value.toBoolean()
                 SUNDAY_FIRST -> config.isSundayFirst = value.toBoolean()
-                HIGHLIGHT_WEEKENDS -> config.highlightWeekends = value.toBoolean()
             }
         }
 
+        toast(if (configValues.size > 0) R.string.settings_imported_successfully else R.string.no_entries_for_importing)
         runOnUiThread {
-            val msg = if (configValues.size > 0) R.string.settings_imported_successfully else R.string.no_entries_for_importing
-            toast(msg)
-
             setupSettingItems()
             updateWidgets()
         }

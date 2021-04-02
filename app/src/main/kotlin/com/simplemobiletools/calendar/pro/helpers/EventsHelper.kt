@@ -3,10 +3,11 @@ package com.simplemobiletools.calendar.pro.helpers
 import android.app.Activity
 import android.content.Context
 import androidx.collection.LongSparseArray
+import com.simplemobiletools.calendar.pro.R
 import com.simplemobiletools.calendar.pro.extensions.*
 import com.simplemobiletools.calendar.pro.models.Event
 import com.simplemobiletools.calendar.pro.models.EventType
-import com.simplemobiletools.commons.helpers.CHOPPED_LIST_DEFAULT_SIZE
+import com.simplemobiletools.commons.extensions.getChoppedList
 import com.simplemobiletools.commons.helpers.ensureBackgroundThread
 
 class EventsHelper(val context: Context) {
@@ -146,7 +147,7 @@ class EventsHelper(val context: Context) {
             return
         }
 
-        ids.chunked(CHOPPED_LIST_DEFAULT_SIZE).forEach {
+        ids.getChoppedList().forEach {
             val eventsWithImportId = eventsDB.getEventsByIdsWithImportIds(it)
             eventsDB.deleteEvents(it)
 
@@ -160,12 +161,12 @@ class EventsHelper(val context: Context) {
                 }
             }
 
-            deleteChildEvents(it as MutableList<Long>, deleteFromCalDAV)
+            deleteChildEvents(it, deleteFromCalDAV)
             context.updateWidgets()
         }
     }
 
-    private fun deleteChildEvents(ids: List<Long>, deleteFromCalDAV: Boolean) {
+    private fun deleteChildEvents(ids: MutableList<Long>, deleteFromCalDAV: Boolean) {
         val childIds = eventsDB.getEventIdsWithParentIds(ids).toMutableList()
         if (childIds.isNotEmpty()) {
             deleteEvents(childIds, deleteFromCalDAV)
@@ -202,17 +203,6 @@ class EventsHelper(val context: Context) {
             val events = eventsDB.getEventsForSearch(searchQuery)
             val displayEventTypes = config.displayEventTypes
             val filteredEvents = events.filter { displayEventTypes.contains(it.eventType.toString()) }
-
-            val eventTypeColors = LongSparseArray<Int>()
-            eventTypesDB.getEventTypes().forEach {
-                eventTypeColors.put(it.id!!, it.color)
-            }
-
-            filteredEvents.forEach {
-                it.updateIsPastEvent()
-                it.color = eventTypeColors.get(it.eventType) ?: config.primaryColor
-            }
-
             activity.runOnUiThread {
                 callback(text, filteredEvents)
             }
@@ -248,11 +238,7 @@ class EventsHelper(val context: Context) {
                 callback(ArrayList())
                 return
             } else {
-                try {
-                    eventsDB.getOneTimeEventsFromToWithTypes(toTS, fromTS, context.config.getDisplayEventTypessAsList()).toMutableList() as ArrayList<Event>
-                } catch (e: Exception) {
-                    ArrayList()
-                }
+                eventsDB.getOneTimeEventsFromToWithTypes(toTS, fromTS, context.config.getDisplayEventTypessAsList()).toMutableList() as ArrayList<Event>
             }
         } else {
             if (eventId == -1L) {
@@ -275,9 +261,10 @@ class EventsHelper(val context: Context) {
             eventTypeColors.put(it.id!!, it.color)
         }
 
+        val primaryColor = context.resources.getColor(R.color.color_primary)
         events.forEach {
             it.updateIsPastEvent()
-            it.color = eventTypeColors.get(it.eventType) ?: config.primaryColor
+            it.color = eventTypeColors.get(it.eventType) ?: primaryColor
         }
 
         callback(events)
@@ -414,10 +401,10 @@ class EventsHelper(val context: Context) {
         return events
     }
 
-    fun getEventsToExport(eventTypes: ArrayList<Long>): ArrayList<Event> {
+    fun getEventsToExport(includePast: Boolean, eventTypes: ArrayList<Long>): ArrayList<Event> {
         val currTS = getNowSeconds()
         var events = ArrayList<Event>()
-        if (config.exportPastEvents) {
+        if (includePast) {
             events.addAll(eventsDB.getAllEventsWithTypes(eventTypes))
         } else {
             events.addAll(eventsDB.getOneTimeFutureEventsWithTypes(currTS, eventTypes))

@@ -6,7 +6,6 @@
     <string name="daily_view">Tagesansicht</string>
     <string name="weekly_view">Wochenansicht</string>
     <string name="monthly_view">Monatsansicht</string>
-    <string name="monthly_daily_view">Monthly + daily view</string>
     <string name="yearly_view">Jahresansicht</string>
     <string name="simple_event_list">Einfache Terminliste</string>
     <string name="no_upcoming_events">Scheint so, als hättest du keine anstehenden Termine.</string>
@@ -17,7 +16,6 @@
     <!-- Widget titles -->
     <string name="widget_monthly">Monatskalender</string>
     <string name="widget_list">Termin-Liste</string>
-    <string name="widget_todays_date">Kalender heutiges Datum</string>
 
     <!-- Event -->
     <string name="event">Termin</string>
@@ -51,7 +49,6 @@
     <string name="delete_future_occurrences">Diese und zukünftige Wiederholungen löschen</string>
     <string name="delete_all_occurrences">Alle Wiederholungen löschen</string>
     <string name="update_one_only">Nur die ausgewählte Wiederholung ändern</string>
-    <string name="update_this_and_future_occurrences">Update this and all future occurrences</string>
     <string name="update_all_occurrences">Alle Wiederholungen ändern</string>
     <string name="repeat_till_date">Bis zu bestimmtem Datum wiederholen</string>
     <string name="stop_repeating_after_x">Stopp nach x Wiederholungen</string>
@@ -72,7 +69,6 @@
     <string name="second_m">zweiten</string>
     <string name="third_m">dritten</string>
     <string name="fourth_m">vierten</string>
-    <string name="fifth_m">fifth</string>
     <string name="last_m">letzten</string>
 
     <!-- alternative versions for some languages, use the same translations if you are not sure what this means -->
@@ -83,7 +79,6 @@
     <string name="second_f">zweiten</string>
     <string name="third_f">dritten</string>
     <string name="fourth_f">vierten</string>
-    <string name="fifth_f">fifth</string>
     <string name="last_f">letzten</string>
 
     <!-- Birthdays -->
@@ -104,7 +99,7 @@
     <string name="reminder">Erinnerung</string>
     <string name="before">vorher</string>
     <string name="add_another_reminder">Weitere Erinnerung hinzufügen</string>
-    <string name="event_reminders">Terminerinnerungen</string>
+    <string name="event_reminders">Termin-Erinnerungen</string>
 
     <!-- Event attendees -->
     <string name="add_another_attendee">Teilnehmer hinzufügen</string>
@@ -114,21 +109,19 @@
     <string name="maybe_going">Vielleicht</string>
     <string name="invited">Eingeladen</string>
 
-    <!-- Time zones -->
-    <string name="enter_a_country">Region, Stadt oder Zeitversatz eingeben</string>
-
     <!-- Export / Import -->
     <string name="import_events">Termine importieren</string>
     <string name="export_events">Termine exportieren</string>
-    <string name="import_events_from_ics">Termine aus ics-Datei importieren</string>
-    <string name="export_events_to_ics">Termine als ics-Datei exportieren</string>
-    <string name="default_event_type">Standardtermintyp</string>
+    <string name="import_events_from_ics">Termine aus .ics-Datei importieren</string>
+    <string name="export_events_to_ics">Termine als .ics-Datei exportieren</string>
+    <string name="default_event_type">Standard-Termintyp</string>
     <string name="export_past_events_too">Vergangene Termine auch exportieren</string>
     <string name="include_event_types">Termintypen miteinbeziehen</string>
     <string name="filename_without_ics">Dateiname (ohne .ics)</string>
     <string name="override_event_types">Termintypen in der Datei überschreiben</string>
 
     <!-- Event details -->
+    <string name="title">Titel</string>
     <string name="location">Ort</string>
     <string name="description">Beschreibung</string>
     <string name="all_day">Ganztags</string>
@@ -143,9 +136,9 @@
     <string name="type_already_exists">Typ mit diesem Namen existiert bereits</string>
     <string name="color">Farbe</string>
     <string name="regular_event">Regulärer Termin</string>
-    <string name="cannot_delete_default_type">Standardtermintyp kann nicht gelöscht werden</string>
+    <string name="cannot_delete_default_type">Standard-Termintyp kann nicht gelöscht werden</string>
     <string name="select_event_type">Wähle einen Termintyp aus</string>
-    <string name="move_events_into_default">Betroffene Termine in den Standardtermintyp verschieben</string>
+    <string name="move_events_into_default">Betroffene Termine in den Standard-Termintyp verschieben</string>
     <string name="remove_affected_events">Betroffene Termine dauerhaft löschen</string>
     <string name="unsync_caldav_calendar">Um einen CalDAV-Kalender zu entfernen, musst du ihn desynchronisieren</string>
 
@@ -162,7 +155,6 @@
     <string name="manage_event_types">Termintypen verwalten</string>
     <string name="start_day_at">Wochenansicht beginnt um</string>
     <string name="end_day_at">Wochenansicht endet um</string>
-    <string name="allow_customizing_day_count">Erlaube den Tageszähler anzupassen</string>
     <string name="week_numbers">Kalenderwoche anzeigen</string>
     <string name="vibrate">Vibration bei Erinnerung</string>
     <string name="reminder_sound">Erinnerungston</string>
@@ -179,7 +171,7 @@
     <string name="loop_reminders">Erinnerungen wiederholen bis sie verworfen werden</string>
     <string name="dim_past_events">Vergangene Termine ausgrauen</string>
     <string name="events">Termine</string>
-    <string name="reminder_stream">Audioausgabekanal für Erinnerungen</string>
+    <string name="reminder_stream">Audio-Ausgabekanal für Erinnerungen</string>
     <string name="system_stream">Medien</string>
     <string name="alarm_stream">Wecker</string>
     <string name="notification_stream">Benachrichtigung</string>
@@ -191,14 +183,12 @@
     <string name="view_to_open_from_widget">Ansicht beim Öffnen durch das Terminlisten-Widget</string>
     <string name="last_view">Letzte Ansicht</string>
     <string name="new_events">Neue Termine</string>
-    <string name="default_start_time">Standardanfangszeit</string>
+    <string name="default_start_time">Standard-Anfangszeit</string>
     <string name="next_full_hour">Nächste volle Stunde</string>
-    <string name="current_time">Current time</string>
-    <string name="default_duration">Standarddauer</string>
+    <string name="default_duration">Standard-Dauer</string>
     <string name="last_used_one">Zuletzt verwendete</string>
     <string name="other_time">Andere Zeit</string>
     <string name="highlight_weekends">Wochenenden in einigen Ansichten hervorheben</string>
-    <string name="allow_changing_time_zones">Zeitzone kann geändert werden</string>
 
     <!-- CalDAV sync -->
     <string name="caldav">CalDAV</string>
@@ -213,8 +203,7 @@
     <string name="synchronization_completed">Synchronisation erfolgreich</string>
     <string name="select_a_different_caldav_color">Wähle eine andere Farbe (wird möglicherweise nur lokal angewendet)</string>
     <string name="insufficient_permissions">Dir fehlt die Berechtigung zum Ändern des gewählten Kalenders</string>
-    <string name="caldav_event_not_found">Der Termin wurde nicht gefunden. Bitte aktiviere die Synchronisierung für den Kalender in den Einstellungen.</string>
-    <string name="no_synchronized_calendars">Es wurden keine synchronisierbaren Kalender gefunden</string>
+    <string name="caldav_event_not_found">Event not found. Please enable CalDAV sync for the appropriate calendar in the app settings.</string>
 
     <!-- alternative versions for some languages, use the same translations if you are not sure what this means -->
     <!-- used in repetition, like "Every last Sunday" -->
@@ -243,19 +232,16 @@
     <string name="faq_2_title">Kann ich meine Termine über Google Kalender oder andere CalDAV unterstützende Dienste synchronisieren?</string>
     <string name="faq_2_text">Ja, aktiviere \"CalDAV-Synchronisierung\" in den Einstellungen und wähle die Kalender aus, die du synchronisieren willst. 
         Jedoch benötigst du eine separate App, die Synchronisierung zwischen Gerät und Servern handhabt. Falls du einen Google Kalender synchronisieren willst, kann die offizielle Kalender-App dies übernehmen.
-        Für andere Kalender benötigst du einen Synchronisierungsadapter, wie z. B. DAVx5.</string>
+        Für andere Kalender benötigst du einen Synchronisierungsadapter, wie z. B. DAVdroid.</string>
     <string name="faq_3_title">Ich sehe die Erinnerungen, aber ich höre keinen Ton. Was kann ich tun?</string>
     <string name="faq_3_text">Erinnerungen nicht nur anzeigen, sondern Töne dazu abspielen ist ebenfalls stark vom jeweiligen (Android) System abhängig. Wenn Du keine Töne hörst, versuche in den App Einstellungen,
-        die Option \"Audioausgabekanal für Erinnerungen\" anzuklicken und eine andere Option auszuwählen. Wenn das immer noch nichts ändert, prüfe Deine Lautstärkeeinstellungen und ob der gewählte Kanal nicht auf lautlos steht.</string>
-    <string name="faq_4_title">Unterstützt diese Kalender-App Zeitzonen?</string>
-    <string name="faq_4_text">Ja. Standardmäßig werden alle neuen Termine in der aktuellen Zeitzone des Gerätes erstellt. Um die Zeitzone eines Termins ändern zu können muss die Option \"Zeitzone kann geändert werden\"
-        in den Einstellungen aktiviert sein. Die Zeitzone eines Termins kann dann beim Anlegen oder Bearbeiten geändert werden. In den Standardeinstellungen ist dies nicht aktiv, da die meisten Anwender die Möglichkeit nicht benötigen werden.</string>
+        die Option \"Audio-Ausgabekanal für Erinnerungen\" anzuklicken und eine andere Option auszuwählen. Wenn das immer noch nichts ändert, prüfe Deine Lautstärkeeinstellungen. of der gewählte Kanal nicht auf lautlos steht.</string>
 
     <!-- Strings displayed only on Google Playstore. Optional, but good to have -->
     <!-- App title has to have less than 50 characters. If you cannot squeeze it, just remove a part of it -->
     <string name="app_title">Simple Calendar Pro - Termine &amp; Erinnerungen</string>
     <!-- Short description has to have less than 80 chars -->
-    <string name="app_short_description">Der beste Kalender zum Organisieren der Ereignisse während des ganzen Tages</string>
+    <string name="app_short_description">Ein großartiger Kalender ohne Werbung, 100% Geld-zurück-Garantie.</string>
     <string name="app_long_description">
         Simple Calendar Pro ist ein vollständig anpassbarer Offline-Kalender, der genau das bietet, was man von einem Kalender erwartet. <b>Keine umständlichen Funktionen, keine unnötigen Berechtigungen und keine Werbung!</b>
 
@@ -290,9 +276,6 @@
 
         <b>Einen Überblick über die komplette Suite von Simple Tools gibt es hier:</b>
         https://www.simplemobiletools.com
-
-        <b>Eigene Website von Simple Calendar Pro:</b>
-        https://www.simplemobiletools.com/calendar
 
         <b>Facebook:</b>
         https://www.facebook.com/simplemobiletools

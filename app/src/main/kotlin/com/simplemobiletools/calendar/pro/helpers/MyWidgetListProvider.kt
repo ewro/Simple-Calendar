@@ -11,7 +11,6 @@ import android.widget.RemoteViews
 import com.simplemobiletools.calendar.pro.R
 import com.simplemobiletools.calendar.pro.activities.SplashActivity
 import com.simplemobiletools.calendar.pro.extensions.config
-import com.simplemobiletools.calendar.pro.extensions.getWidgetFontSize
 import com.simplemobiletools.calendar.pro.extensions.launchNewEventIntent
 import com.simplemobiletools.calendar.pro.services.WidgetService
 import com.simplemobiletools.calendar.pro.services.WidgetServiceEmpty
@@ -28,13 +27,13 @@ class MyWidgetListProvider : AppWidgetProvider() {
     }
 
     private fun performUpdate(context: Context) {
-        val fontSize = context.getWidgetFontSize()
+        val fontSize = context.config.getFontSize()
         val textColor = context.config.widgetTextColor
 
         val appWidgetManager = AppWidgetManager.getInstance(context)
         appWidgetManager.getAppWidgetIds(getComponentName(context)).forEach {
             val views = RemoteViews(context.packageName, R.layout.widget_event_list).apply {
-                applyColorFilter(R.id.widget_event_list_background, context.config.widgetBgColor)
+                setBackgroundColor(R.id.widget_event_list_holder, context.config.widgetBgColor)
                 setTextColor(R.id.widget_event_list_empty, textColor)
                 setTextSize(R.id.widget_event_list_empty, fontSize)
 

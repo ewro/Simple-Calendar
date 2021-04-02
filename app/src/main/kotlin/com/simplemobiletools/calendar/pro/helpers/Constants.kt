@@ -1,8 +1,8 @@
 package com.simplemobiletools.calendar.pro.helpers
 
+const val LOW_ALPHA = .3f
+const val MEDIUM_ALPHA = .6f
 const val STORED_LOCALLY_ONLY = 0
-const val ROW_COUNT = 6
-const val COLUMN_COUNT = 7
 
 const val DAY_CODE = "day_code"
 const val YEAR_LABEL = "year"
@@ -17,8 +17,6 @@ const val CALDAV = "Caldav"
 const val VIEW_TO_OPEN = "view_to_open"
 const val SHORTCUT_NEW_EVENT = "shortcut_new_event"
 const val REGULAR_EVENT_TYPE_ID = 1L
-const val TIME_ZONE = "time_zone"
-const val CURRENT_TIME_ZONE = "current_time_zone"
 
 const val MONTHLY_VIEW = 1
 const val YEARLY_VIEW = 2
@@ -26,7 +24,6 @@ const val EVENTS_LIST_VIEW = 3
 const val WEEKLY_VIEW = 4
 const val DAILY_VIEW = 5
 const val LAST_VIEW = 6
-const val MONTHLY_DAILY_VIEW = 7
 
 const val REMINDER_OFF = -1
 
@@ -42,6 +39,7 @@ const val YEAR = 31536000
 // Shared Preferences
 const val WEEK_NUMBERS = "week_numbers"
 const val START_WEEKLY_AT = "start_weekly_at"
+const val END_WEEKLY_AT = "end_weekly_at"
 const val VIBRATE = "vibrate"
 const val REMINDER_SOUND_URI = "reminder_sound_uri"
 const val REMINDER_SOUND_TITLE = "reminder_sound_title"
@@ -50,6 +48,7 @@ const val LAST_EVENT_REMINDER_MINUTES = "reminder_minutes"
 const val LAST_EVENT_REMINDER_MINUTES_2 = "reminder_minutes_2"
 const val LAST_EVENT_REMINDER_MINUTES_3 = "reminder_minutes_3"
 const val DISPLAY_EVENT_TYPES = "display_event_types"
+const val FONT_SIZE = "font_size"
 const val LIST_WIDGET_VIEW_TO_OPEN = "list_widget_view_to_open"
 const val CALDAV_SYNC = "caldav_sync"
 const val CALDAV_SYNCED_CALENDAR_IDS = "caldav_synced_calendar_ids"
@@ -72,12 +71,6 @@ const val LAST_VIBRATE_ON_REMINDER = "last_vibrate_on_reminder"
 const val DEFAULT_START_TIME = "default_start_time"
 const val DEFAULT_DURATION = "default_duration"
 const val DEFAULT_EVENT_TYPE_ID = "default_event_type_id"
-const val ALLOW_CHANGING_TIME_ZONES = "allow_changing_time_zones"
-const val LAST_EXPORT_PATH = "last_export_path"
-const val EXPORT_PAST_EVENTS = "export_past_events"
-const val WEEKLY_VIEW_ITEM_HEIGHT_MULTIPLIER = "weekly_view_item_height_multiplier"
-const val WEEKLY_VIEW_DAYS = "weekly_view_days"
-const val HIGHLIGHT_WEEKENDS = "highlight_weekends"
 
 // repeat_rule for monthly and yearly repetition
 const val REPEAT_SAME_DAY = 1                           // i.e. 25th every month, or 3rd june (if yearly repetition)
@@ -101,7 +94,6 @@ const val END_ALARM = "END:VALARM"
 const val DTSTART = "DTSTART"
 const val DTEND = "DTEND"
 const val LAST_MODIFIED = "LAST-MODIFIED"
-const val DTSTAMP = "DTSTAMP:"
 const val DURATION = "DURATION:"
 const val SUMMARY = "SUMMARY"
 const val DESCRIPTION = "DESCRIPTION:"
@@ -109,7 +101,7 @@ const val UID = "UID:"
 const val ACTION = "ACTION:"
 const val ATTENDEE = "ATTENDEE:"
 const val MAILTO = "mailto:"
-const val TRIGGER = "TRIGGER"
+const val TRIGGER = "TRIGGER:"
 const val RRULE = "RRULE:"
 const val CATEGORIES = "CATEGORIES:"
 const val STATUS = "STATUS:"
@@ -147,6 +139,11 @@ const val FR = "FR"
 const val SA = "SA"
 const val SU = "SU"
 
+// font sizes
+const val FONT_SIZE_SMALL = 0
+const val FONT_SIZE_MEDIUM = 1
+const val FONT_SIZE_LARGE = 2
+
 const val SOURCE_SIMPLE_CALENDAR = "simple-calendar"
 const val SOURCE_IMPORTED_ICS = "imported-ics"
 const val SOURCE_CONTACT_BIRTHDAY = "contact-birthday"
@@ -160,11 +157,3 @@ const val REMINDER_NOTIFICATION = 0
 const val REMINDER_EMAIL = 1
 
 fun getNowSeconds() = System.currentTimeMillis() / 1000L
-
-fun isWeekend(i: Int, isSundayFirst: Boolean): Boolean {
-    return if (isSundayFirst) {
-        i == 0 || i == 6 || i == 7 || i == 13
-    } else {
-        i == 5 || i == 6 || i == 12 || i == 13
-    }
-}

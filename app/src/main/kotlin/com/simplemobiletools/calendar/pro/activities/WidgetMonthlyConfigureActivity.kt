@@ -4,6 +4,7 @@ import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.LinearLayout
@@ -13,9 +14,9 @@ import com.simplemobiletools.calendar.pro.R
 import com.simplemobiletools.calendar.pro.extensions.addDayEvents
 import com.simplemobiletools.calendar.pro.extensions.addDayNumber
 import com.simplemobiletools.calendar.pro.extensions.config
+import com.simplemobiletools.calendar.pro.helpers.LOW_ALPHA
 import com.simplemobiletools.calendar.pro.helpers.MonthlyCalendarImpl
 import com.simplemobiletools.calendar.pro.helpers.MyWidgetMonthlyProvider
-import com.simplemobiletools.calendar.pro.helpers.isWeekend
 import com.simplemobiletools.calendar.pro.interfaces.MonthlyCalendar
 import com.simplemobiletools.calendar.pro.models.DayMonthly
 import com.simplemobiletools.commons.dialogs.ColorPickerDialog
@@ -23,14 +24,15 @@ import com.simplemobiletools.commons.extensions.adjustAlpha
 import com.simplemobiletools.commons.extensions.applyColorFilter
 import com.simplemobiletools.commons.extensions.beVisible
 import com.simplemobiletools.commons.extensions.setFillWithStroke
-import com.simplemobiletools.commons.helpers.LOWER_ALPHA
 import kotlinx.android.synthetic.main.first_row.*
 import kotlinx.android.synthetic.main.top_navigation.*
 import kotlinx.android.synthetic.main.widget_config_monthly.*
 import org.joda.time.DateTime
 
 class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
+    lateinit var mRes: Resources
     private var mDays: List<DayMonthly>? = null
+    private var mPackageName = ""
     private var dayLabelHeight = 0
 
     private var mBgAlpha = 0f
@@ -41,7 +43,6 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
     private var mTextColor = 0
     private var mWeakTextColor = 0
     private var mPrimaryColor = 0
-    private var mRedTextColor = 0
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         useDynamicTheme = false
@@ -69,6 +70,9 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
     }
 
     private fun initVariables() {
+        mPackageName = packageName
+        mRes = resources
+
         mTextColorWithoutTransparency = config.widgetTextColor
         updateColors()
 
@@ -129,9 +133,8 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
 
     private fun updateColors() {
         mTextColor = mTextColorWithoutTransparency
-        mWeakTextColor = mTextColorWithoutTransparency.adjustAlpha(LOWER_ALPHA)
+        mWeakTextColor = mTextColorWithoutTransparency.adjustAlpha(LOW_ALPHA)
         mPrimaryColor = config.primaryColor
-        mRedTextColor = resources.getColor(R.color.red_text)
 
         top_left_arrow.applyColorFilter(mTextColor)
         top_right_arrow.applyColorFilter(mTextColor)
@@ -143,7 +146,7 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
 
     private fun updateBgColor() {
         mBgColor = mBgColorWithoutTransparency.adjustAlpha(mBgAlpha)
-        config_calendar.background.applyColorFilter(mBgColor)
+        config_calendar.setBackgroundColor(mBgColor)
         config_bg_color.setFillWithStroke(mBgColor, Color.BLACK)
         config_save.setBackgroundColor(mBgColor)
     }
@@ -156,7 +159,7 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
             week_num.beVisible()
 
             for (i in 0..5) {
-                findViewById<TextView>(resources.getIdentifier("week_num_$i", "id", packageName)).apply {
+                findViewById<TextView>(mRes.getIdentifier("week_num_$i", "id", mPackageName)).apply {
                     text = "${mDays!![i * 7 + 3].weekOfYear}:"
                     setTextColor(mTextColor)
                     beVisible()
@@ -164,20 +167,14 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
             }
         }
 
-        val dividerMargin = resources.displayMetrics.density.toInt()
+        val dividerMargin = mRes.displayMetrics.density.toInt()
         for (i in 0 until len) {
-            findViewById<LinearLayout>(resources.getIdentifier("day_$i", "id", packageName)).apply {
+            findViewById<LinearLayout>(mRes.getIdentifier("day_$i", "id", mPackageName)).apply {
                 val day = mDays!![i]
                 removeAllViews()
 
-                val dayTextColor = if (config.highlightWeekends && day.isWeekend) {
-                    mRedTextColor
-                } else {
-                    mTextColor
-                }
-
-                context.addDayNumber(dayTextColor, day, this, dayLabelHeight) { dayLabelHeight = it }
-                context.addDayEvents(day, this, resources, dividerMargin)
+                context.addDayNumber(mTextColor, day, this, dayLabelHeight) { dayLabelHeight = it }
+                context.addDayEvents(day, this, mRes, dividerMargin)
             }
         }
     }
@@ -188,9 +185,13 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
             updateBgColor()
         }
 
-        override fun onStartTrackingTouch(seekBar: SeekBar) {}
+        override fun onStartTrackingTouch(seekBar: SeekBar) {
 
-        override fun onStopTrackingTouch(seekBar: SeekBar) {}
+        }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar) {
+
+        }
     }
 
     override fun updateMonthlyCalendar(context: Context, month: String, days: ArrayList<DayMonthly>, checkedEvents: Boolean, currTargetDate: DateTime) {
@@ -203,14 +204,8 @@ class WidgetMonthlyConfigureActivity : SimpleActivity(), MonthlyCalendar {
 
     private fun updateLabels() {
         for (i in 0..6) {
-            findViewById<TextView>(resources.getIdentifier("label_$i", "id", packageName)).apply {
-                val textColor = if (config.highlightWeekends && isWeekend(i, config.isSundayFirst)) {
-                    mRedTextColor
-                } else {
-                    mTextColor
-                }
-
-                setTextColor(textColor)
+            findViewById<TextView>(mRes.getIdentifier("label_$i", "id", mPackageName)).apply {
+                setTextColor(mTextColor)
             }
         }
     }

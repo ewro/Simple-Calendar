@@ -6,8 +6,6 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import com.simplemobiletools.calendar.pro.R
 import com.simplemobiletools.calendar.pro.extensions.config
-import com.simplemobiletools.calendar.pro.helpers.COLUMN_COUNT
-import com.simplemobiletools.calendar.pro.helpers.ROW_COUNT
 import com.simplemobiletools.calendar.pro.models.DayMonthly
 import com.simplemobiletools.commons.extensions.onGlobalLayout
 import kotlinx.android.synthetic.main.month_view.view.*
@@ -19,7 +17,6 @@ class MonthViewWrapper(context: Context, attrs: AttributeSet, defStyle: Int) : F
     private var weekDaysLetterHeight = 0
     private var horizontalOffset = 0
     private var wereViewsAdded = false
-    private var isMonthDayView = true
     private var days = ArrayList<DayMonthly>()
     private var inflater: LayoutInflater
     private var monthView: MonthView
@@ -38,23 +35,21 @@ class MonthViewWrapper(context: Context, attrs: AttributeSet, defStyle: Int) : F
         onGlobalLayout {
             if (!wereViewsAdded && days.isNotEmpty()) {
                 measureSizes()
-                addClickableBackgrounds()
-                monthView.updateDays(days, isMonthDayView)
+                addViews()
+                monthView.updateDays(days)
             }
         }
     }
 
-    fun updateDays(newDays: ArrayList<DayMonthly>, addEvents: Boolean, callback: ((DayMonthly) -> Unit)? = null) {
+    fun updateDays(newDays: ArrayList<DayMonthly>, callback: ((DayMonthly) -> Unit)? = null) {
         setupHorizontalOffset()
         measureSizes()
         dayClickCallback = callback
         days = newDays
         if (dayWidth != 0f && dayHeight != 0f) {
-            addClickableBackgrounds()
+            addViews()
         }
-
-        isMonthDayView = !addEvents
-        monthView.updateDays(days, isMonthDayView)
+        monthView.updateDays(days)
     }
 
     private fun setupHorizontalOffset() {
@@ -71,47 +66,34 @@ class MonthViewWrapper(context: Context, attrs: AttributeSet, defStyle: Int) : F
         }
     }
 
-    private fun addClickableBackgrounds() {
+    private fun addViews() {
         removeAllViews()
         monthView = inflater.inflate(R.layout.month_view, this).month_view
         wereViewsAdded = true
         var curId = 0
-        for (y in 0 until ROW_COUNT) {
-            for (x in 0 until COLUMN_COUNT) {
+        for (y in 0..5) {
+            for (x in 0..6) {
                 val day = days.getOrNull(curId)
                 if (day != null) {
-                    addViewBackground(x, y, day)
+                    val xPos = x * dayWidth + horizontalOffset
+                    val yPos = y * dayHeight + weekDaysLetterHeight
+                    addViewBackground(xPos, yPos, day)
                 }
                 curId++
             }
         }
     }
 
-    private fun addViewBackground(viewX: Int, viewY: Int, day: DayMonthly) {
-        val xPos = viewX * dayWidth + horizontalOffset
-        val yPos = viewY * dayHeight + weekDaysLetterHeight
-
+    private fun addViewBackground(xPos: Float, yPos: Float, day: DayMonthly) {
         inflater.inflate(R.layout.month_view_background, this, false).apply {
-            if (isMonthDayView) {
-                background = null
-            }
-
             layoutParams.width = dayWidth.toInt()
             layoutParams.height = dayHeight.toInt()
             x = xPos
             y = yPos
             setOnClickListener {
                 dayClickCallback?.invoke(day)
-
-                if (isMonthDayView) {
-                    monthView.updateCurrentlySelectedDay(viewX, viewY)
-                }
             }
             addView(this)
         }
-    }
-
-    fun togglePrintMode() {
-        monthView.togglePrintMode()
     }
 }

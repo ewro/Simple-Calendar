@@ -8,9 +8,7 @@ import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.res.Resources
-import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Bundle
@@ -22,7 +20,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationCompat
-import androidx.print.PrintHelper
 import com.simplemobiletools.calendar.pro.R
 import com.simplemobiletools.calendar.pro.activities.EventActivity
 import com.simplemobiletools.calendar.pro.activities.SnoozeReminderActivity
@@ -37,6 +34,8 @@ import com.simplemobiletools.calendar.pro.receivers.NotificationReceiver
 import com.simplemobiletools.calendar.pro.services.SnoozeService
 import com.simplemobiletools.commons.extensions.*
 import com.simplemobiletools.commons.helpers.*
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
 import java.util.*
 
@@ -57,24 +56,12 @@ fun Context.updateWidgets() {
     }
 
     updateListWidget()
-    updateDateWidget()
 }
 
 fun Context.updateListWidget() {
     val widgetIDs = AppWidgetManager.getInstance(applicationContext).getAppWidgetIds(ComponentName(applicationContext, MyWidgetListProvider::class.java))
     if (widgetIDs.isNotEmpty()) {
         Intent(applicationContext, MyWidgetListProvider::class.java).apply {
-            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIDs)
-            sendBroadcast(this)
-        }
-    }
-}
-
-fun Context.updateDateWidget() {
-    val widgetIDs = AppWidgetManager.getInstance(applicationContext).getAppWidgetIds(ComponentName(applicationContext, MyWidgetDateProvider::class.java))
-    if (widgetIDs.isNotEmpty()) {
-        Intent(applicationContext, MyWidgetDateProvider::class.java).apply {
             action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIDs)
             sendBroadcast(this)
@@ -211,9 +198,7 @@ fun Context.notifyEvent(originalEvent: Event) {
         val notification = getNotification(pendingIntent, event, content)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         try {
-            if (notification != null) {
-                notificationManager.notify(event.id!!.toInt(), notification)
-            }
+            notificationManager.notify(event.id!!.toInt(), notification)
         } catch (e: Exception) {
             showErrorToast(e)
         }
@@ -221,7 +206,7 @@ fun Context.notifyEvent(originalEvent: Event) {
 }
 
 @SuppressLint("NewApi")
-fun Context.getNotification(pendingIntent: PendingIntent, event: Event, content: String, publicVersion: Boolean = false): Notification? {
+fun Context.getNotification(pendingIntent: PendingIntent, event: Event, content: String, publicVersion: Boolean = false): Notification {
     var soundUri = config.reminderSoundUri
     if (soundUri == SILENT) {
         soundUri = ""
@@ -247,10 +232,10 @@ fun Context.getNotification(pendingIntent: PendingIntent, event: Event, content:
     val channelId = "simple_calendar_${config.lastReminderChannel}_${config.reminderAudioStream}_${event.eventType}"
     if (isOreoPlus()) {
         val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .setLegacyStreamType(config.reminderAudioStream)
-            .build()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setLegacyStreamType(config.reminderAudioStream)
+                .build()
 
         val name = eventTypesDB.getEventTypeWithId(event.eventType)?.getDisplayTitle()
         val importance = NotificationManager.IMPORTANCE_HIGH
@@ -260,12 +245,7 @@ fun Context.getNotification(pendingIntent: PendingIntent, event: Event, content:
             lightColor = event.color
             enableVibration(config.vibrateOnReminder)
             setSound(Uri.parse(soundUri), audioAttributes)
-            try {
-                notificationManager.createNotificationChannel(this)
-            } catch (e: Exception) {
-                showErrorToast(e)
-                return null
-            }
+            notificationManager.createNotificationChannel(this)
         }
     }
 
@@ -273,17 +253,17 @@ fun Context.getNotification(pendingIntent: PendingIntent, event: Event, content:
     val contentText = if (publicVersion) resources.getString(R.string.public_event_notification_text) else content
 
     val builder = NotificationCompat.Builder(this, channelId)
-        .setContentTitle(contentTitle)
-        .setContentText(contentText)
-        .setSmallIcon(R.drawable.ic_calendar_vector)
-        .setContentIntent(pendingIntent)
-        .setPriority(NotificationCompat.PRIORITY_MAX)
-        .setDefaults(Notification.DEFAULT_LIGHTS)
-        .setCategory(Notification.CATEGORY_EVENT)
-        .setAutoCancel(true)
-        .setSound(Uri.parse(soundUri), config.reminderAudioStream)
-        .setChannelId(channelId)
-        .addAction(R.drawable.ic_snooze_vector, getString(R.string.snooze), getSnoozePendingIntent(this, event))
+            .setContentTitle(contentTitle)
+            .setContentText(contentText)
+            .setSmallIcon(R.drawable.ic_calendar)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setDefaults(Notification.DEFAULT_LIGHTS)
+            .setCategory(Notification.CATEGORY_EVENT)
+            .setAutoCancel(true)
+            .setSound(Uri.parse(soundUri), config.reminderAudioStream)
+            .setChannelId(channelId)
+            .addAction(R.drawable.ic_snooze_vector, getString(R.string.snooze), getSnoozePendingIntent(this, event))
 
     if (config.vibrateOnReminder) {
         val vibrateArray = LongArray(2) { 500 }
@@ -291,10 +271,7 @@ fun Context.getNotification(pendingIntent: PendingIntent, event: Event, content:
     }
 
     if (!publicVersion) {
-        val notification = getNotification(pendingIntent, event, content, true)
-        if (notification != null) {
-            builder.setPublicVersion(notification)
-        }
+        builder.setPublicVersion(getNotification(pendingIntent, event, content, true))
     }
 
     val notification = builder.build()
@@ -331,36 +308,29 @@ fun Context.rescheduleReminder(event: Event?, minutes: Int) {
     }
 }
 
-// if the default event start time is set to "Next full hour" and the event is created before midnight, it could change the day
-fun Context.launchNewEventIntent(dayCode: String = Formatter.getTodayCode(), allowChangingDay: Boolean = false) {
+fun Context.launchNewEventIntent(dayCode: String = Formatter.getTodayCode()) {
     Intent(applicationContext, EventActivity::class.java).apply {
-        putExtra(NEW_EVENT_START_TS, getNewEventTimestampFromCode(dayCode, allowChangingDay))
+        putExtra(NEW_EVENT_START_TS, getNewEventTimestampFromCode(dayCode))
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(this)
     }
 }
 
-fun Context.getNewEventTimestampFromCode(dayCode: String, allowChangingDay: Boolean = false): Long {
-    val calendar = Calendar.getInstance()
+fun Context.getNewEventTimestampFromCode(dayCode: String): Long {
     val defaultStartTime = config.defaultStartTime
-    val currHour = calendar.get(Calendar.HOUR_OF_DAY)
+    val currHour = DateTime(System.currentTimeMillis(), DateTimeZone.getDefault()).hourOfDay
     var dateTime = Formatter.getLocalDateTimeFromCode(dayCode).withHourOfDay(currHour)
     var newDateTime = dateTime.plusHours(1).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0)
-    if (!allowChangingDay && dateTime.dayOfMonth() != newDateTime.dayOfMonth()) {
-        newDateTime = newDateTime.minusDays(1)
-    }
 
-    return if (defaultStartTime == -1) {
-        newDateTime.seconds()
-    } else {
+    if (defaultStartTime != -1) {
         val hours = defaultStartTime / 60
         val minutes = defaultStartTime % 60
         dateTime = Formatter.getLocalDateTimeFromCode(dayCode).withHourOfDay(hours).withMinuteOfHour(minutes)
         newDateTime = dateTime
-
-        // make sure the date doesn't change
-        newDateTime.withDate(dateTime.year, dateTime.monthOfYear, dateTime.dayOfMonth).seconds()
     }
+
+    // make sure the date doesn't change
+    return newDateTime.withDate(dateTime.year, dateTime.monthOfYear, dateTime.dayOfMonth).seconds()
 }
 
 fun Context.getSyncedCalDAVCalendars() = calDAVHelper.getCalDAVCalendars(config.caldavSyncedCalendarIds, false)
@@ -393,7 +363,7 @@ fun Context.scheduleCalDAVSync(activate: Boolean) {
 fun Context.addDayNumber(rawTextColor: Int, day: DayMonthly, linearLayout: LinearLayout, dayLabelHeight: Int, callback: (Int) -> Unit) {
     var textColor = rawTextColor
     if (!day.isThisMonth)
-        textColor = textColor.adjustAlpha(LOWER_ALPHA)
+        textColor = textColor.adjustAlpha(LOW_ALPHA)
 
     (View.inflate(applicationContext, R.layout.day_monthly_number_view, null) as TextView).apply {
         setTextColor(textColor)
@@ -421,7 +391,7 @@ fun Context.addDayNumber(rawTextColor: Int, day: DayMonthly, linearLayout: Linea
 }
 
 private fun addTodaysBackground(textView: TextView, res: Resources, dayLabelHeight: Int, primaryColor: Int) =
-    textView.addResizedBackgroundDrawable(res, dayLabelHeight, primaryColor, R.drawable.ic_circle_filled)
+        textView.addResizedBackgroundDrawable(res, dayLabelHeight, primaryColor, R.drawable.ic_circle_filled)
 
 fun Context.addDayEvents(day: DayMonthly, linearLayout: LinearLayout, res: Resources, dividerMargin: Int) {
     val eventLayoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
@@ -460,7 +430,7 @@ fun Context.addDayEvents(day: DayMonthly, linearLayout: LinearLayout, res: Resou
     }
 }
 
-fun Context.getEventListItems(events: List<Event>, addSections: Boolean = true): ArrayList<ListItem> {
+fun Context.getEventListItems(events: List<Event>): ArrayList<ListItem> {
     val listItems = ArrayList<ListItem>(events.size)
     val replaceDescription = config.replaceDescription
 
@@ -485,7 +455,7 @@ fun Context.getEventListItems(events: List<Event>, addSections: Boolean = true):
 
     sorted.forEach {
         val code = Formatter.getDayCodeFromTS(it.startTS)
-        if (code != prevCode && addSections) {
+        if (code != prevCode) {
             val day = Formatter.getDayTitle(this, code)
             val isToday = day == today
             val listSection = ListSection(day, code, isToday, !isToday && it.startTS < now)
@@ -525,42 +495,10 @@ fun Context.refreshCalDAVCalendars(ids: String, showToasts: Boolean) {
     }
 
     Bundle().apply {
+        putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true)
         putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true)
         accounts.forEach {
             ContentResolver.requestSync(it, uri.authority, this)
         }
-    }
-}
-
-fun Context.getWidgetFontSize() = when (config.fontSize) {
-    FONT_SIZE_SMALL -> getWidgetSmallFontSize()
-    FONT_SIZE_MEDIUM -> getWidgetMediumFontSize()
-    FONT_SIZE_LARGE -> getWidgetLargeFontSize()
-    else -> getWidgetExtraLargeFontSize()
-}
-
-fun Context.getWidgetSmallFontSize() = getWidgetMediumFontSize() - 3f
-fun Context.getWidgetMediumFontSize() = resources.getDimension(R.dimen.day_text_size) / resources.displayMetrics.density
-fun Context.getWidgetLargeFontSize() = getWidgetMediumFontSize() + 3f
-fun Context.getWidgetExtraLargeFontSize() = getWidgetMediumFontSize() + 6f
-
-fun Context.getWeeklyViewItemHeight(): Float {
-    val defaultHeight = resources.getDimension(R.dimen.weekly_view_row_height)
-    val multiplier = config.weeklyViewItemHeightMultiplier
-    return defaultHeight * multiplier
-}
-
-fun Context.printBitmap(bitmap: Bitmap) {
-    val printHelper = PrintHelper(this)
-    printHelper.scaleMode = PrintHelper.SCALE_MODE_FIT
-    printHelper.orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-    printHelper.printBitmap(getString(R.string.app_name), bitmap)
-}
-
-fun Context.editEvent(event: ListEvent) {
-    Intent(this, EventActivity::class.java).apply {
-        putExtra(EVENT_ID, event.id)
-        putExtra(EVENT_OCCURRENCE_TS, event.startTS)
-        startActivity(this)
     }
 }

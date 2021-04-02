@@ -16,11 +16,7 @@ class Converters {
             value
         }
 
-        return try {
-            gson.fromJson(newValue, stringType)
-        } catch (e: Exception) {
-            ArrayList()
-        }
+        return gson.fromJson(newValue, stringType)
     }
 
     @TypeConverter

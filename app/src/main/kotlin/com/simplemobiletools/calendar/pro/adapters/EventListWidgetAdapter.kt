@@ -10,7 +10,6 @@ import com.simplemobiletools.calendar.pro.R.id.event_item_holder
 import com.simplemobiletools.calendar.pro.R.id.event_section_title
 import com.simplemobiletools.calendar.pro.extensions.config
 import com.simplemobiletools.calendar.pro.extensions.eventsHelper
-import com.simplemobiletools.calendar.pro.extensions.getWidgetFontSize
 import com.simplemobiletools.calendar.pro.extensions.seconds
 import com.simplemobiletools.calendar.pro.helpers.*
 import com.simplemobiletools.calendar.pro.helpers.Formatter
@@ -22,7 +21,6 @@ import com.simplemobiletools.commons.extensions.adjustAlpha
 import com.simplemobiletools.commons.extensions.setBackgroundColor
 import com.simplemobiletools.commons.extensions.setText
 import com.simplemobiletools.commons.extensions.setTextSize
-import com.simplemobiletools.commons.helpers.LOWER_ALPHA
 import org.joda.time.DateTime
 import java.util.*
 
@@ -33,10 +31,10 @@ class EventListWidgetAdapter(val context: Context) : RemoteViewsService.RemoteVi
     private val allDayString = context.resources.getString(R.string.all_day)
     private var events = ArrayList<ListItem>()
     private var textColor = context.config.widgetTextColor
-    private var weakTextColor = textColor.adjustAlpha(LOWER_ALPHA)
+    private var weakTextColor = textColor.adjustAlpha(LOW_ALPHA)
     private val replaceDescription = context.config.replaceDescription
     private val dimPastEvents = context.config.dimPastEvents
-    private var mediumFontSize = context.getWidgetFontSize()
+    private var mediumFontSize = context.config.getFontSize()
 
     override fun getViewAt(position: Int): RemoteViews? {
         val type = getItemViewType(position)
@@ -49,10 +47,7 @@ class EventListWidgetAdapter(val context: Context) : RemoteViewsService.RemoteVi
             setupListEvent(remoteView, event)
         } else {
             remoteView = RemoteViews(context.packageName, R.layout.event_list_section_widget)
-            val section = events.getOrNull(position) as? ListSection
-            if (section != null) {
-                setupListSection(remoteView, section)
-            }
+            setupListSection(remoteView, events[position] as ListSection)
         }
 
         return remoteView
@@ -146,7 +141,7 @@ class EventListWidgetAdapter(val context: Context) : RemoteViewsService.RemoteVi
         }
     }
 
-    private fun getItemViewType(position: Int) = if (events.getOrNull(position) is ListEvent) ITEM_EVENT else ITEM_HEADER
+    private fun getItemViewType(position: Int) = if (events[position] is ListEvent) ITEM_EVENT else ITEM_HEADER
 
     override fun getLoadingView() = null
 
@@ -158,8 +153,8 @@ class EventListWidgetAdapter(val context: Context) : RemoteViewsService.RemoteVi
 
     override fun onDataSetChanged() {
         textColor = context.config.widgetTextColor
-        weakTextColor = textColor.adjustAlpha(LOWER_ALPHA)
-        mediumFontSize = context.getWidgetFontSize()
+        weakTextColor = textColor.adjustAlpha(LOW_ALPHA)
+        mediumFontSize = context.config.getFontSize()
         val fromTS = DateTime().seconds() - context.config.displayPastEvents * 60
         val toTS = DateTime().plusYears(1).seconds()
         context.eventsHelper.getEventsSync(fromTS, toTS, applyTypeFilter = true) {

@@ -6,7 +6,6 @@ import com.simplemobiletools.calendar.pro.extensions.isXYearlyRepetition
 import com.simplemobiletools.calendar.pro.extensions.seconds
 import com.simplemobiletools.calendar.pro.models.Event
 import com.simplemobiletools.calendar.pro.models.EventRepetition
-import com.simplemobiletools.commons.extensions.areDigitsOnly
 import com.simplemobiletools.commons.helpers.*
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
@@ -21,10 +20,6 @@ class Parser {
 
         for (part in parts) {
             val keyValue = part.split("=")
-            if (keyValue.size <= 1) {
-                continue
-            }
-
             val key = keyValue[0]
             val value = keyValue[1]
             if (key == FREQ) {
@@ -34,19 +29,6 @@ class Parser {
                     repeatRule = Math.pow(2.0, (start.dayOfWeek - 1).toDouble()).toInt()
                 } else if (value == MONTHLY || value == YEARLY) {
                     repeatRule = REPEAT_SAME_DAY
-                } else if (value == DAILY && fullString.contains(INTERVAL)) {
-                    val interval = fullString.substringAfter("$INTERVAL=").substringBefore(";")
-                    // properly handle events repeating by 14 days or so, just add a repeat rule to specify a day of the week
-                    if (interval.areDigitsOnly() && interval.toInt() % 7 == 0) {
-                        val dateTime = Formatter.getDateTimeFromTS(startTS)
-                        repeatRule = Math.pow(2.0, (dateTime.dayOfWeek - 1).toDouble()).toInt()
-                    } else if (fullString.contains("BYDAY")) {
-                        // some services use weekly repetition for repeating on specific week days, some use daily
-                        // make these produce the same result
-                        // RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR
-                        // RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
-                        repeatInterval = WEEK_SECONDS
-                    }
                 }
             } else if (key == COUNT) {
                 repeatLimit = -value.toLong()
@@ -60,10 +42,8 @@ class Parser {
                 } else if (repeatInterval.isXMonthlyRepetition() || repeatInterval.isXYearlyRepetition()) {
                     repeatRule = if (value.startsWith("-1")) REPEAT_ORDER_WEEKDAY_USE_LAST else REPEAT_ORDER_WEEKDAY
                 }
-            } else if (key == BYMONTHDAY) {
-                if (value.split(",").any { it.toInt() == -1 }) {
-                    repeatRule = REPEAT_LAST_DAY
-                }
+            } else if (key == BYMONTHDAY && value.toInt() == -1) {
+                repeatRule = REPEAT_LAST_DAY
             }
         }
         return EventRepetition(repeatInterval, repeatRule, repeatLimit)
@@ -230,12 +210,10 @@ class Parser {
             days = Math.floor((remainder / DAY_MINUTES).toDouble()).toInt()
             remainder -= days * DAY_MINUTES
         }
-
         if (remainder >= 60) {
             hours = Math.floor((remainder / 60).toDouble()).toInt()
             remainder -= hours * 60
         }
-
         return "P${days}DT${hours}H${remainder}M0S"
     }
 }

@@ -40,22 +40,22 @@ class EditEventTypeDialog(val activity: Activity, var eventType: EventType? = nu
         }
 
         AlertDialog.Builder(activity)
-            .setPositiveButton(R.string.ok, null)
-            .setNegativeButton(R.string.cancel, null)
-            .create().apply {
-                activity.setupDialogStuff(view, this, if (isNewEvent) R.string.add_new_type else R.string.edit_type) {
-                    showKeyboard(view.type_title)
-                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                        ensureBackgroundThread {
-                            eventTypeConfirmed(view.type_title.value, this)
+                .setPositiveButton(R.string.ok, null)
+                .setNegativeButton(R.string.cancel, null)
+                .create().apply {
+                    activity.setupDialogStuff(view, this, if (isNewEvent) R.string.add_new_type else R.string.edit_type) {
+                        showKeyboard(view.type_title)
+                        getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                            ensureBackgroundThread {
+                                eventTypeConfirmed(view.type_title.value, this)
+                            }
                         }
                     }
                 }
-            }
     }
 
     private fun setupColor(view: ImageView) {
-        view.setFillWithStroke(eventType!!.color, activity.config.backgroundColor, activity.getCornerRadius())
+        view.setFillWithStroke(eventType!!.color, activity.config.backgroundColor)
     }
 
     private fun eventTypeConfirmed(title: String, dialog: AlertDialog) {

@@ -9,35 +9,33 @@ import com.simplemobiletools.calendar.pro.extensions.seconds
 import com.simplemobiletools.calendar.pro.helpers.*
 import com.simplemobiletools.commons.extensions.addBitIf
 import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 import java.io.Serializable
 
 @Entity(tableName = "events", indices = [(Index(value = ["id"], unique = true))])
 data class Event(
-    @PrimaryKey(autoGenerate = true) var id: Long?,
-    @ColumnInfo(name = "start_ts") var startTS: Long = 0L,
-    @ColumnInfo(name = "end_ts") var endTS: Long = 0L,
-    @ColumnInfo(name = "title") var title: String = "",
-    @ColumnInfo(name = "location") var location: String = "",
-    @ColumnInfo(name = "description") var description: String = "",
-    @ColumnInfo(name = "reminder_1_minutes") var reminder1Minutes: Int = REMINDER_OFF,
-    @ColumnInfo(name = "reminder_2_minutes") var reminder2Minutes: Int = REMINDER_OFF,
-    @ColumnInfo(name = "reminder_3_minutes") var reminder3Minutes: Int = REMINDER_OFF,
-    @ColumnInfo(name = "reminder_1_type") var reminder1Type: Int = REMINDER_NOTIFICATION,
-    @ColumnInfo(name = "reminder_2_type") var reminder2Type: Int = REMINDER_NOTIFICATION,
-    @ColumnInfo(name = "reminder_3_type") var reminder3Type: Int = REMINDER_NOTIFICATION,
-    @ColumnInfo(name = "repeat_interval") var repeatInterval: Int = 0,
-    @ColumnInfo(name = "repeat_rule") var repeatRule: Int = 0,
-    @ColumnInfo(name = "repeat_limit") var repeatLimit: Long = 0L,
-    @ColumnInfo(name = "repetition_exceptions") var repetitionExceptions: ArrayList<String> = ArrayList(),
-    @ColumnInfo(name = "attendees") var attendees: String = "",
-    @ColumnInfo(name = "import_id") var importId: String = "",
-    @ColumnInfo(name = "time_zone") var timeZone: String = "",
-    @ColumnInfo(name = "flags") var flags: Int = 0,
-    @ColumnInfo(name = "event_type") var eventType: Long = REGULAR_EVENT_TYPE_ID,
-    @ColumnInfo(name = "parent_id") var parentId: Long = 0,
-    @ColumnInfo(name = "last_updated") var lastUpdated: Long = 0L,
-    @ColumnInfo(name = "source") var source: String = SOURCE_SIMPLE_CALENDAR)
+        @PrimaryKey(autoGenerate = true) var id: Long?,
+        @ColumnInfo(name = "start_ts") var startTS: Long = 0L,
+        @ColumnInfo(name = "end_ts") var endTS: Long = 0L,
+        @ColumnInfo(name = "title") var title: String = "",
+        @ColumnInfo(name = "location") var location: String = "",
+        @ColumnInfo(name = "description") var description: String = "",
+        @ColumnInfo(name = "reminder_1_minutes") var reminder1Minutes: Int = -1,
+        @ColumnInfo(name = "reminder_2_minutes") var reminder2Minutes: Int = -1,
+        @ColumnInfo(name = "reminder_3_minutes") var reminder3Minutes: Int = -1,
+        @ColumnInfo(name = "reminder_1_type") var reminder1Type: Int = REMINDER_NOTIFICATION,
+        @ColumnInfo(name = "reminder_2_type") var reminder2Type: Int = REMINDER_NOTIFICATION,
+        @ColumnInfo(name = "reminder_3_type") var reminder3Type: Int = REMINDER_NOTIFICATION,
+        @ColumnInfo(name = "repeat_interval") var repeatInterval: Int = 0,
+        @ColumnInfo(name = "repeat_rule") var repeatRule: Int = 0,
+        @ColumnInfo(name = "repeat_limit") var repeatLimit: Long = 0L,
+        @ColumnInfo(name = "repetition_exceptions") var repetitionExceptions: ArrayList<String> = ArrayList(),
+        @ColumnInfo(name = "attendees") var attendees: String = "",
+        @ColumnInfo(name = "import_id") var importId: String = "",
+        @ColumnInfo(name = "flags") var flags: Int = 0,
+        @ColumnInfo(name = "event_type") var eventType: Long = REGULAR_EVENT_TYPE_ID,
+        @ColumnInfo(name = "parent_id") var parentId: Long = 0,
+        @ColumnInfo(name = "last_updated") var lastUpdated: Long = 0L,
+        @ColumnInfo(name = "source") var source: String = SOURCE_SIMPLE_CALENDAR)
     : Serializable {
 
     companion object {
@@ -54,7 +52,7 @@ data class Event(
                     repeatInterval % YEAR == 0 -> when (repeatRule) {
                         REPEAT_ORDER_WEEKDAY -> addXthDayInterval(oldStart, original, false)
                         REPEAT_ORDER_WEEKDAY_USE_LAST -> addXthDayInterval(oldStart, original, true)
-                        else -> addYearsWithSameDay(oldStart)
+                        else -> oldStart.plusYears(repeatInterval / YEAR)
                     }
                     repeatInterval % MONTH == 0 -> when (repeatRule) {
                         REPEAT_SAME_DAY -> addMonthsWithSameDay(oldStart, original)
@@ -77,20 +75,6 @@ data class Event(
         endTS = newEndTS
     }
 
-    // if an event should happen on 29th Feb. with Same Day yearly repetition, show it only on leap years
-    private fun addYearsWithSameDay(currStart: DateTime): DateTime {
-        var newDateTime = currStart.plusYears(repeatInterval / YEAR)
-
-        // Date may slide within the same month
-        if (newDateTime.dayOfMonth != currStart.dayOfMonth) {
-            while (newDateTime.dayOfMonth().maximumValue < currStart.dayOfMonth) {
-                newDateTime = newDateTime.plusYears(repeatInterval / YEAR)
-            }
-            newDateTime = newDateTime.withDayOfMonth(currStart.dayOfMonth)
-        }
-        return newDateTime
-    }
-
     // if an event should happen on 31st with Same Day monthly repetition, dont show it at all at months with 30 or less days
     private fun addMonthsWithSameDay(currStart: DateTime, original: Event): DateTime {
         var newDateTime = currStart.plusMonths(repeatInterval / MONTH)
@@ -100,11 +84,7 @@ data class Event(
 
         while (newDateTime.dayOfMonth().maximumValue < Formatter.getDateTimeFromTS(original.startTS).dayOfMonth().maximumValue) {
             newDateTime = newDateTime.plusMonths(repeatInterval / MONTH)
-            newDateTime = try {
-                newDateTime.withDayOfMonth(currStart.dayOfMonth)
-            } catch (e: Exception) {
-                newDateTime
-            }
+            newDateTime = newDateTime.withDayOfMonth(currStart.dayOfMonth)
         }
         return newDateTime
     }
@@ -113,8 +93,10 @@ data class Event(
     private fun addXthDayInterval(currStart: DateTime, original: Event, forceLastWeekday: Boolean): DateTime {
         val day = currStart.dayOfWeek
         var order = (currStart.dayOfMonth - 1) / 7
-        var properMonth = currStart.withDayOfMonth(7).plusMonths(repeatInterval / MONTH).withDayOfWeek(day)
-        var wantedDay: Int
+        val properMonth = currStart.withDayOfMonth(7).plusMonths(repeatInterval / MONTH).withDayOfWeek(day)
+        var firstProperDay = properMonth.dayOfMonth % 7
+        if (firstProperDay == 0)
+            firstProperDay = properMonth.dayOfMonth
 
         // check if it should be for example Fourth Monday, or Last Monday
         if (forceLastWeekday && (order == 3 || order == 4)) {
@@ -124,14 +106,13 @@ data class Event(
                 order = -1
         }
 
+        val daysCnt = properMonth.dayOfMonth().maximumValue
+        var wantedDay = firstProperDay + order * 7
+        if (wantedDay > daysCnt)
+            wantedDay -= 7
+
         if (order == -1) {
-            wantedDay = properMonth.dayOfMonth + ((properMonth.dayOfMonth().maximumValue - properMonth.dayOfMonth) / 7) * 7
-        } else {
-            wantedDay = properMonth.dayOfMonth + (order - (properMonth.dayOfMonth - 1) / 7) * 7
-            while (properMonth.dayOfMonth().maximumValue < wantedDay) {
-                properMonth = properMonth.withDayOfMonth(7).plusMonths(repeatInterval / MONTH).withDayOfWeek(day)
-                wantedDay = properMonth.dayOfMonth + (order - (properMonth.dayOfMonth - 1) / 7) * 7
-            }
+            wantedDay = firstProperDay + ((daysCnt - firstProperDay) / 7) * 7
         }
 
         return properMonth.withDayOfMonth(wantedDay)
@@ -140,9 +121,9 @@ data class Event(
     fun getIsAllDay() = flags and FLAG_ALL_DAY != 0
 
     fun getReminders() = setOf(
-        Reminder(reminder1Minutes, reminder1Type),
-        Reminder(reminder2Minutes, reminder2Type),
-        Reminder(reminder3Minutes, reminder3Type)
+            Reminder(reminder1Minutes, reminder1Type),
+            Reminder(reminder2Minutes, reminder2Type),
+            Reminder(reminder3Minutes, reminder3Type)
     ).filter { it.minutes != REMINDER_OFF }
 
     // properly return the start time of all-day events as midnight
@@ -164,12 +145,12 @@ data class Event(
 
     fun getCalDAVCalendarId() = if (source.startsWith(CALDAV)) (source.split("-").lastOrNull() ?: "0").toString().toInt() else 0
 
-    // check if it's the proper week, for events repeating every x weeks
+    // check if its the proper week, for events repeating every x weeks
     // get the week number since 1970, not just in the current year
     fun isOnProperWeek(startTimes: LongSparseArray<Long>): Boolean {
-        val initialWeekNumber = Formatter.getDateTimeFromTS(startTimes[id!!]!!).withTimeAtStartOfDay().millis / (7 * 24 * 60 * 60 * 1000f)
-        val currentWeekNumber = Formatter.getDateTimeFromTS(startTS).withTimeAtStartOfDay().millis / (7 * 24 * 60 * 60 * 1000f)
-        return (Math.round(initialWeekNumber) - Math.round(currentWeekNumber)) % (repeatInterval / WEEK) == 0
+        val initialWeekNumber = Formatter.getDateTimeFromTS(startTimes[id!!]!!).millis / (7 * 24 * 60 * 60 * 1000)
+        val currentWeekNumber = Formatter.getDateTimeFromTS(startTS).millis / (7 * 24 * 60 * 60 * 1000)
+        return (initialWeekNumber - currentWeekNumber) % (repeatInterval / WEEK) == 0L
     }
 
     fun updateIsPastEvent() {
@@ -195,12 +176,4 @@ data class Event(
         }
 
     var color: Int = 0
-
-    fun getTimeZoneString(): String {
-        return if (timeZone.isNotEmpty() && getAllTimeZones().map { it.zoneName }.contains(timeZone)) {
-            timeZone
-        } else {
-            DateTimeZone.getDefault().id
-        }
-    }
 }

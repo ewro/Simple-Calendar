@@ -2,10 +2,12 @@ package com.simplemobiletools.calendar.pro.helpers
 
 import android.content.Context
 import android.media.AudioManager
-import android.media.RingtoneManager
+import com.simplemobiletools.calendar.pro.R
 import com.simplemobiletools.calendar.pro.extensions.config
 import com.simplemobiletools.calendar.pro.extensions.scheduleCalDAVSync
 import com.simplemobiletools.commons.extensions.getDefaultAlarmTitle
+import com.simplemobiletools.commons.extensions.getDefaultAlarmUri
+import com.simplemobiletools.commons.helpers.ALARM_SOUND_TYPE_NOTIFICATION
 import com.simplemobiletools.commons.helpers.BaseConfig
 import com.simplemobiletools.commons.helpers.DAY_MINUTES
 import java.util.*
@@ -23,20 +25,24 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getInt(START_WEEKLY_AT, 7)
         set(startWeeklyAt) = prefs.edit().putInt(START_WEEKLY_AT, startWeeklyAt).apply()
 
+    var endWeeklyAt: Int
+        get() = prefs.getInt(END_WEEKLY_AT, 23)
+        set(endWeeklyAt) = prefs.edit().putInt(END_WEEKLY_AT, endWeeklyAt).apply()
+
     var vibrateOnReminder: Boolean
         get() = prefs.getBoolean(VIBRATE, false)
         set(vibrate) = prefs.edit().putBoolean(VIBRATE, vibrate).apply()
 
     var reminderSoundUri: String
-        get() = prefs.getString(REMINDER_SOUND_URI, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION).toString())!!
+        get() = prefs.getString(REMINDER_SOUND_URI, context.getDefaultAlarmUri(ALARM_SOUND_TYPE_NOTIFICATION).toString())
         set(reminderSoundUri) = prefs.edit().putString(REMINDER_SOUND_URI, reminderSoundUri).apply()
 
     var reminderSoundTitle: String
-        get() = prefs.getString(REMINDER_SOUND_TITLE, context.getDefaultAlarmTitle(RingtoneManager.TYPE_NOTIFICATION))!!
+        get() = prefs.getString(REMINDER_SOUND_TITLE, context.getDefaultAlarmTitle(ALARM_SOUND_TYPE_NOTIFICATION))
         set(reminderSoundTitle) = prefs.edit().putString(REMINDER_SOUND_TITLE, reminderSoundTitle).apply()
 
     var lastSoundUri: String
-        get() = prefs.getString(LAST_SOUND_URI, "")!!
+        get() = prefs.getString(LAST_SOUND_URI, "")
         set(lastSoundUri) = prefs.edit().putString(LAST_SOUND_URI, lastSoundUri).apply()
 
     var lastReminderChannel: Long
@@ -64,8 +70,12 @@ class Config(context: Context) : BaseConfig(context) {
         set(displayPastEvents) = prefs.edit().putInt(DISPLAY_PAST_EVENTS, displayPastEvents).apply()
 
     var displayEventTypes: Set<String>
-        get() = prefs.getStringSet(DISPLAY_EVENT_TYPES, HashSet<String>())!!
+        get() = prefs.getStringSet(DISPLAY_EVENT_TYPES, HashSet<String>())
         set(displayEventTypes) = prefs.edit().remove(DISPLAY_EVENT_TYPES).putStringSet(DISPLAY_EVENT_TYPES, displayEventTypes).apply()
+
+    var fontSize: Int
+        get() = prefs.getInt(FONT_SIZE, FONT_SIZE_MEDIUM)
+        set(size) = prefs.edit().putInt(FONT_SIZE, size).apply()
 
     var listWidgetViewToOpen: Int
         get() = prefs.getInt(LIST_WIDGET_VIEW_TO_OPEN, DAILY_VIEW)
@@ -79,7 +89,7 @@ class Config(context: Context) : BaseConfig(context) {
         }
 
     var caldavSyncedCalendarIds: String
-        get() = prefs.getString(CALDAV_SYNCED_CALENDAR_IDS, "")!!
+        get() = prefs.getString(CALDAV_SYNCED_CALENDAR_IDS, "")
         set(calendarIDs) = prefs.edit().putString(CALDAV_SYNCED_CALENDAR_IDS, calendarIDs).apply()
 
     var lastUsedCaldavCalendarId: Int
@@ -130,6 +140,16 @@ class Config(context: Context) : BaseConfig(context) {
         displayEventTypes = currDisplayEventTypes
     }
 
+    fun getFontSize() = when (fontSize) {
+        FONT_SIZE_SMALL -> getSmallFontSize()
+        FONT_SIZE_MEDIUM -> getMediumFontSize()
+        else -> getLargeFontSize()
+    }
+
+    private fun getSmallFontSize() = getMediumFontSize() - 3f
+    private fun getMediumFontSize() = context.resources.getDimension(R.dimen.day_text_size) / context.resources.displayMetrics.density
+    private fun getLargeFontSize() = getMediumFontSize() + 3f
+
     var usePreviousEventReminders: Boolean
         get() = prefs.getBoolean(USE_PREVIOUS_EVENT_REMINDERS, true)
         set(usePreviousEventReminders) = prefs.edit().putBoolean(USE_PREVIOUS_EVENT_REMINDERS, usePreviousEventReminders).apply()
@@ -165,28 +185,4 @@ class Config(context: Context) : BaseConfig(context) {
     var defaultEventTypeId: Long
         get() = prefs.getLong(DEFAULT_EVENT_TYPE_ID, -1L)
         set(defaultEventTypeId) = prefs.edit().putLong(DEFAULT_EVENT_TYPE_ID, defaultEventTypeId).apply()
-
-    var allowChangingTimeZones: Boolean
-        get() = prefs.getBoolean(ALLOW_CHANGING_TIME_ZONES, false)
-        set(allowChangingTimeZones) = prefs.edit().putBoolean(ALLOW_CHANGING_TIME_ZONES, allowChangingTimeZones).apply()
-
-    var lastExportPath: String
-        get() = prefs.getString(LAST_EXPORT_PATH, "")!!
-        set(lastExportPath) = prefs.edit().putString(LAST_EXPORT_PATH, lastExportPath).apply()
-
-    var exportPastEvents: Boolean
-        get() = prefs.getBoolean(EXPORT_PAST_EVENTS, false)
-        set(exportPastEvents) = prefs.edit().putBoolean(EXPORT_PAST_EVENTS, exportPastEvents).apply()
-
-    var weeklyViewItemHeightMultiplier: Float
-        get() = prefs.getFloat(WEEKLY_VIEW_ITEM_HEIGHT_MULTIPLIER, 1f)
-        set(weeklyViewItemHeightMultiplier) = prefs.edit().putFloat(WEEKLY_VIEW_ITEM_HEIGHT_MULTIPLIER, weeklyViewItemHeightMultiplier).apply()
-
-    var weeklyViewDays: Int
-        get() = prefs.getInt(WEEKLY_VIEW_DAYS, 7)
-        set(weeklyViewDays) = prefs.edit().putInt(WEEKLY_VIEW_DAYS, weeklyViewDays).apply()
-
-    var highlightWeekends: Boolean
-        get() = prefs.getBoolean(HIGHLIGHT_WEEKENDS, false)
-        set(highlightWeekends) = prefs.edit().putBoolean(HIGHLIGHT_WEEKENDS, highlightWeekends).apply()
 }

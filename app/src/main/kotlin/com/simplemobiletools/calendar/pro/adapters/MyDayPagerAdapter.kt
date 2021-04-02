@@ -33,8 +33,4 @@ class MyDayPagerAdapter(fm: FragmentManager, private val mCodes: List<String>, p
             mFragments[pos + i]?.updateCalendar()
         }
     }
-
-    fun printCurrentView(pos: Int) {
-        mFragments[pos].printCurrentView()
-    }
 }

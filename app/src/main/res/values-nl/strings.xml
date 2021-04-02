@@ -6,7 +6,6 @@
     <string name="daily_view">Dag</string>
     <string name="weekly_view">Week</string>
     <string name="monthly_view">Maand</string>
-    <string name="monthly_daily_view">Maand + dag</string>
     <string name="yearly_view">Jaar</string>
     <string name="simple_event_list">Lijst</string>
     <string name="no_upcoming_events">Niets gepland.</string>
@@ -17,7 +16,6 @@
     <!-- Widget titles -->
     <string name="widget_monthly">Maandweergave</string>
     <string name="widget_list">Afsprakenlijst</string>
-    <string name="widget_todays_date">Agenda vandaag</string>
 
     <!-- Event -->
     <string name="event">Afspraak</string>
@@ -51,7 +49,6 @@
     <string name="delete_future_occurrences">Deze afspraak en hierop volgende herhalingen verwijderen</string>
     <string name="delete_all_occurrences">Al deze afspraken verwijderen</string>
     <string name="update_one_only">Alleen huidige afspraak bijwerken</string>
-    <string name="update_this_and_future_occurrences">Deze afspraak en hierop volgende herhalingen bijwerken</string>
     <string name="update_all_occurrences">Alle afspraken bijwerken</string>
     <string name="repeat_till_date">Herhalen tot datum</string>
     <string name="stop_repeating_after_x">Herhaling stoppen na x keer</string>
@@ -72,7 +69,6 @@
     <string name="second_m">tweede</string>
     <string name="third_m">derde</string>
     <string name="fourth_m">vierde</string>
-    <string name="fifth_m">vijfde</string>
     <string name="last_m">laatste</string>
 
     <!-- alternative versions for some languages, use the same translations if you are not sure what this means -->
@@ -83,7 +79,6 @@
     <string name="second_f">tweede</string>
     <string name="third_f">derde</string>
     <string name="fourth_f">vierde</string>
-    <string name="fifth_f">vijfde</string>
     <string name="last_f">laatste</string>
 
     <!-- Birthdays -->
@@ -114,9 +109,6 @@
     <string name="maybe_going">Misschien</string>
     <string name="invited">Uitgenodigd</string>
 
-    <!-- Time zones -->
-    <string name="enter_a_country">Voer een land of tijdzone in</string>
-
     <!-- Export / Import -->
     <string name="import_events">Afspraken importeren</string>
     <string name="export_events">Afspraken exporteren</string>
@@ -129,6 +121,7 @@
     <string name="override_event_types">Afspraaktypes uit het bestand negeren</string>
 
     <!-- Event details -->
+    <string name="title">Titel</string>
     <string name="location">Locatie</string>
     <string name="description">Beschrijving</string>
     <string name="all_day">Hele dag</string>
@@ -162,7 +155,6 @@
     <string name="manage_event_types">Afspraaktypes beheren</string>
     <string name="start_day_at">Dag starten om</string>
     <string name="end_day_at">Dag beëindigen om</string>
-    <string name="allow_customizing_day_count">Wijziging van het aantal zichtbare dagen toestaan</string>
     <string name="week_numbers">Weeknummers tonen</string>
     <string name="vibrate">Trillen bij notificaties</string>
     <string name="reminder_sound">Geluid voor herinnering</string>
@@ -193,12 +185,10 @@
     <string name="new_events">Nieuwe afspraken</string>
     <string name="default_start_time">Standaard begintijd</string>
     <string name="next_full_hour">Eerstvolgende hele uur</string>
-    <string name="current_time">Huidige tijd</string>
     <string name="default_duration">Standaard duur</string>
     <string name="last_used_one">Laatst gebruikt</string>
     <string name="other_time">Andere tijd</string>
     <string name="highlight_weekends">Weekends markeren</string>
-    <string name="allow_changing_time_zones">Bewerken van tijdzone voor afspraken toestaan</string>
 
     <!-- CalDAV sync -->
     <string name="caldav">CalDAV</string>
@@ -214,7 +204,6 @@
     <string name="select_a_different_caldav_color">Kies een andere kleur (mogelijk alleen voor dit apparaat)</string>
     <string name="insufficient_permissions">Kan geen wijzigingen aanbrengen in deze agenda</string>
     <string name="caldav_event_not_found">Afspraak niet gevonden. Schakel via Instellingen de CalDAV-synchronisatie in voor deze agenda.</string>
-    <string name="no_synchronized_calendars">Er zijn geen gesynchroniseerde agenda\'s gevonden.</string>
 
     <!-- alternative versions for some languages, use the same translations if you are not sure what this means -->
     <!-- used in repetition, like "Every last Sunday" -->
@@ -242,19 +231,16 @@
         druk lang op \"Feestdagen\" en druk vervolgens op de prullenbak.</string>
     <string name="faq_2_title">Kan ik mijn afspraken synchroniseren met Google Calendar of een andere service die CalDAV ondersteunt?</string>
     <string name="faq_2_text">Schakel \"CalDAV-synchronisatie\" in bij Instellingen en selecteer vervolgens de agenda\'s die gesynchroniseerd moeten worden. Er is wel een app nodig die de synchronisatie tussen het apparaat en de service zelf afhandelt.
-        Betreft het een agenda van Google Calendar, dan voldoet hun officiële app. Voor andere services zal een adapter zoals DAVx5 benodigd zijn.</string>
+        Betreft het een agenda van Google Calendar, dan voldoet hun officiële app. Voor andere services zal een adapter zoals DAVdroid benodigd zijn.</string>
     <string name="faq_3_title">Ik krijg wel herinneringen, maar ik hoor geen notificatiegeluid. Wat kan ik doen?</string>
     <string name="faq_3_text">Geluiden afspelen bij een herinnering is sterk afhankelijk van het systeem. Als er geen geluid te horen is, ga dan naar instellingen en pas de optie
         \"Type geluiden voor herinneringen gebruiken\" aan. Als dat niet werkt, controleer dan bij de geluidsinstellingen van Android of het volume van dit geluidstype niet te laag is ingesteld.</string>
-    <string name="faq_4_title">Ondersteunt de app tijdzones?</string>
-    <string name="faq_4_text">Ja. Normaliter zullen nieuwe afspraken de huidige tijdzone krijgen toegewezen. De tijdzone van een afspraak kan worden gewijzigd door
-        de optie voor tijdzones in de instellingen te activeren. Hierna kan de tijdzone worden opgegeven in de afspraakdetails. De instelling is standaard niet ingeschakeld, omdat de meeste mensen het niet nodig zullen hebben.</string>
 
     <!-- Strings displayed only on Google Playstore. Optional, but good to have -->
     <!-- App title has to have less than 50 characters. If you cannot squeeze it, just remove a part of it -->
     <string name="app_title">Eenvoudige Agenda Pro - Afspraken &amp; Herinneringen</string>
     <!-- Short description has to have less than 80 chars -->
-    <string name="app_short_description">Eenvoudige mobiele agenda. Plannen &amp; afspraken maken voor iedere dag</string>
+    <string name="app_short_description">Stijlvolle agenda zonder advertenties. 100% niet-goed-geld-teruggarantie.</string>
     <string name="app_long_description">
         Eenvoudige Agenda Pro is een volledig aan te passen offline agenda, ontwikkeld om precies te doen waar een agenda voor bedoeld is. <b>Geen ingewikkelde poespas of onnodige machtigingen, en zonder advertenties!</b>
 
@@ -287,11 +273,8 @@
 
         DOWNLOAD EENVOUDIGE AGENDA PRO – DE AGENDA ZONDER ADVERTENTIES!
 
-        <b>Probeer ook eens de andere apps van Simple Tools:</b>
+        <b>Kijk ook eens naar de hele collectie apps van Simple Tools:</b>
         https://www.simplemobiletools.com
-
-        <b>Website voor Eenvoudige Agenda Pro:</b>
-        https://www.simplemobiletools.com/calendar
 
         <b>Facebook:</b>
         https://www.facebook.com/simplemobiletools

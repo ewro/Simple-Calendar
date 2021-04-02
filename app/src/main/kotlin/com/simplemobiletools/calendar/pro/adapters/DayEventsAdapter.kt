@@ -13,13 +13,13 @@ import com.simplemobiletools.calendar.pro.extensions.shareEvents
 import com.simplemobiletools.calendar.pro.helpers.Formatter
 import com.simplemobiletools.calendar.pro.helpers.ITEM_EVENT
 import com.simplemobiletools.calendar.pro.helpers.ITEM_EVENT_SIMPLE
+import com.simplemobiletools.calendar.pro.helpers.LOW_ALPHA
 import com.simplemobiletools.calendar.pro.models.Event
 import com.simplemobiletools.commons.adapters.MyRecyclerViewAdapter
 import com.simplemobiletools.commons.extensions.adjustAlpha
 import com.simplemobiletools.commons.extensions.applyColorFilter
 import com.simplemobiletools.commons.extensions.beInvisible
 import com.simplemobiletools.commons.extensions.beInvisibleIf
-import com.simplemobiletools.commons.helpers.LOWER_ALPHA
 import com.simplemobiletools.commons.helpers.ensureBackgroundThread
 import com.simplemobiletools.commons.views.MyRecyclerView
 import kotlinx.android.synthetic.main.event_item_day_view.view.*
@@ -30,7 +30,6 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
     private val allDayString = resources.getString(R.string.all_day)
     private val replaceDescriptionWithLocation = activity.config.replaceDescription
     private val dimPastEvents = activity.config.dimPastEvents
-    private var isPrintVersion = false
 
     init {
         setupDragListener(true)
@@ -55,11 +54,7 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
 
     override fun getItemKeyPosition(key: Int) = events.indexOfFirst { it.id?.toInt() == key }
 
-    override fun onActionModeCreated() {}
-
-    override fun onActionModeDestroyed() {}
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyRecyclerViewAdapter.ViewHolder {
         val layoutId = when (viewType) {
             ITEM_EVENT -> R.layout.event_item_day_view
             else -> R.layout.event_item_day_view_simple
@@ -67,7 +62,7 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
         return createViewHolder(layoutId, parent)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: MyRecyclerViewAdapter.ViewHolder, position: Int) {
         val event = events[position]
         holder.bindView(event, true, true) { itemView, layoutPosition ->
             setupView(itemView, event)
@@ -95,16 +90,6 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
         } else {
             ITEM_EVENT
         }
-    }
-
-    fun togglePrintMode() {
-        isPrintVersion = !isPrintVersion
-        textColor = if (isPrintVersion) {
-            resources.getColor(R.color.theme_light_text_color)
-        } else {
-            baseConfig.textColor
-        }
-        notifyDataSetChanged()
     }
 
     private fun setupView(view: View, event: Event) {
@@ -135,8 +120,8 @@ class DayEventsAdapter(activity: SimpleActivity, val events: ArrayList<Event>, r
             }
 
             var newTextColor = textColor
-            if (dimPastEvents && event.isPastEvent && !isPrintVersion) {
-                newTextColor = newTextColor.adjustAlpha(LOWER_ALPHA)
+            if (dimPastEvents && event.isPastEvent) {
+                newTextColor = newTextColor.adjustAlpha(LOW_ALPHA)
             }
 
             event_item_start.setTextColor(newTextColor)

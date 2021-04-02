@@ -6,7 +6,6 @@
     <string name="daily_view">Dagvisning</string>
     <string name="weekly_view">Ukevisning</string>
     <string name="monthly_view">Månedsvisning</string>
-    <string name="monthly_daily_view">Monthly + daily view</string>
     <string name="yearly_view">Årsvisning</string>
     <string name="simple_event_list">Enkel hendelsesliste</string>
     <string name="no_upcoming_events">Ser ut som du ikke har noen kommende hendelser.</string>
@@ -17,7 +16,6 @@
     <!-- Widget titles -->
     <string name="widget_monthly">Månedskalender</string>
     <string name="widget_list">Hendelsesliste</string>
-    <string name="widget_todays_date">Kalender dagens dato</string>
 
     <!-- Event -->
     <string name="event">Hendelse</string>
@@ -51,7 +49,6 @@
     <string name="delete_future_occurrences">Slett denne og alle framtidige forekomster</string>
     <string name="delete_all_occurrences">Slett alle forekomster</string>
     <string name="update_one_only">Oppdater bare den merkede forekomsten</string>
-    <string name="update_this_and_future_occurrences">Update this and all future occurrences</string>
     <string name="update_all_occurrences">Oppdater alle forekomster</string>
     <string name="repeat_till_date">Gjenta til en dato</string>
     <string name="stop_repeating_after_x">Stopp å gjenta etter x forekomster</string>
@@ -72,7 +69,6 @@
     <string name="second_m">andre</string>
     <string name="third_m">tredje</string>
     <string name="fourth_m">fjerde</string>
-    <string name="fifth_m">fifth</string>
     <string name="last_m">siste</string>
 
     <!-- alternative versions for some languages, use the same translations if you are not sure what this means -->
@@ -83,21 +79,20 @@
     <string name="second_f">andre</string>
     <string name="third_f">tredje</string>
     <string name="fourth_f">fjerde</string>
-    <string name="fifth_f">fifth</string>
     <string name="last_f">siste</string>
 
     <!-- Birthdays -->
     <string name="birthdays">Bursdager</string>
     <string name="add_birthdays">Legg til kontaktbursdager</string>
     <string name="no_birthdays">Ingen bursdager er funnet</string>
-    <string name="no_new_birthdays">Ingen nye bursdager er funnet</string>
+    <string name="no_new_birthdays">No new birthdays have been found</string>
     <string name="birthdays_added">Bursdager vellykket lagt til</string>
 
     <!-- Anniversaries -->
     <string name="anniversaries">Jubileer</string>
     <string name="add_anniversaries">Legg til kontaktjubileer</string>
     <string name="no_anniversaries">Ingen jubileer er funnet</string>
-    <string name="no_new_anniversaries">Ingen nye jubileer er funnet</string>
+    <string name="no_new_anniversaries">No new anniversaries have been found</string>
     <string name="anniversaries_added">Jubileer vellykket lagt til</string>
 
     <!-- Event Reminders -->
@@ -114,9 +109,6 @@
     <string name="maybe_going">Maybe going</string>
     <string name="invited">Invited</string>
 
-    <!-- Time zones -->
-    <string name="enter_a_country">Angi et land eller tidssone</string>
-
     <!-- Export / Import -->
     <string name="import_events">Importer hendelser</string>
     <string name="export_events">Eksporter hendelser</string>
@@ -129,6 +121,7 @@
     <string name="override_event_types">Overstyr hendelsestyper i filen</string>
 
     <!-- Event details -->
+    <string name="title">Tittel</string>
     <string name="location">Sted</string>
     <string name="description">Beskrivelse</string>
     <string name="all_day">Hele dagen</string>
@@ -162,7 +155,6 @@
     <string name="manage_event_types">Behandle hendelsestyper</string>
     <string name="start_day_at">Start dag kl.</string>
     <string name="end_day_at">Avslutt dag kl.</string>
-    <string name="allow_customizing_day_count">Tillat å tilpasse antall dager</string>
     <string name="week_numbers">Vis ukenummer</string>
     <string name="vibrate">Vibrer ved påminnelsesvarsel</string>
     <string name="reminder_sound">Påminnelseslyd</string>
@@ -188,17 +180,15 @@
     <string name="default_reminder_1">Standardpåminnelse 1</string>
     <string name="default_reminder_2">Standardpåminnelse 2</string>
     <string name="default_reminder_3">Standardpåminnelse 3</string>
-    <string name="view_to_open_from_widget">Visning å åpne fra hendelseslistemodulen</string>
-    <string name="last_view">Siste visning</string>
+    <string name="view_to_open_from_widget">View to open from the event list widget</string>
+    <string name="last_view">Last view</string>
     <string name="new_events">Nye hendelser</string>
     <string name="default_start_time">Standard starttid</string>
     <string name="next_full_hour">Neste fulle time</string>
-    <string name="current_time">Current time</string>
     <string name="default_duration">Standard varighet</string>
     <string name="last_used_one">Den sist brukte</string>
     <string name="other_time">Annen tid</string>
-    <string name="highlight_weekends">Fremhev helger på noen visninger</string>
-    <string name="allow_changing_time_zones">Tillat å endre tidssoner for hendelser</string>
+    <string name="highlight_weekends">Highlight weekends on some views</string>
 
     <!-- CalDAV sync -->
     <string name="caldav">CalDAV</string>
@@ -214,7 +204,6 @@
     <string name="select_a_different_caldav_color">Select a different color (might be applied locally only)</string>
     <string name="insufficient_permissions">You are not allowed to write in the selected calendar</string>
     <string name="caldav_event_not_found">Event not found. Please enable CalDAV sync for the appropriate calendar in the app settings.</string>
-    <string name="no_synchronized_calendars">No synchronizable calendars have been found</string>
 
     <!-- alternative versions for some languages, use the same translations if you are not sure what this means -->
     <!-- used in repetition, like "Every last Sunday" -->
@@ -242,19 +231,16 @@
         lang-trykk hendelsestypen og slett den ved å velge søppelbøtten.</string>
     <string name="faq_2_title">Kan jeg synkronisere hendelsene mine via Google Kalender eller annen tjeneste som støtter CalDAV?</string>
     <string name="faq_2_text">Ja, bare aktiver \"CalDAV-synkronisering\" i innstillingene og velg kalenderne du vil synkronisere. Du trenger imidlertid program som håndterer synkroniseringen mellom enheten og serverne.
-        Hvis du vil synkronisere en Google-kalender, vil deres offisielle kalenderapp gjøre jobben. For andre kalendere trenger du en annen synkroniseringsapp, for eksempel DAVx5.</string>
+        Hvis du vil synkronisere en Google-kalender, vil deres offisielle kalenderapp gjøre jobben. For andre kalendere trenger du en annen synkroniseringsapp, for eksempel DAVdroid.</string>
     <string name="faq_3_title">I see the visual reminders, but hear no audio. What can I do?</string>
     <string name="faq_3_text">Not just displaying the actual reminder, but playing the audio is hugely affected by the system too. If you can\'t hear any sound, try going in the app settings,
         pressing the \"Audio stream used by reminders\" option and changing it to a different value. If it still won\'t work, check your sound settings, if the particular stream isn\'t muted.</string>
-    <string name="faq_4_title">Does the app support time zones?</string>
-    <string name="faq_4_text">Yes, it does. By default all events are created in your current time zone. If you want to change an events\' time zone,
-        you will first have to enable the time zone picker at the app settings, then change it at the Event Details screen. It is disabled by default as most people won\'t need it.</string>
 
     <!-- Strings displayed only on Google Playstore. Optional, but good to have -->
     <!-- App title has to have less than 50 characters. If you cannot squeeze it, just remove a part of it -->
     <string name="app_title">Simple Calendar Pro - Events &amp; Reminders</string>
     <!-- Short description has to have less than 80 chars -->
-    <string name="app_short_description">Simple mobile 2020 calendar. Schedule planner &amp; appointment reminder for any day</string>
+    <string name="app_short_description">A beautiful calendar without ads, 100% money back guarantee.</string>
     <string name="app_long_description">
         Simple Calendar Pro is a fully customizable, offline calendar designed to do exactly what a calendar should do. <b>No complicated features, unnecessary permissions and no ads!</b>
 
@@ -289,9 +275,6 @@
 
         <b>Check out the full suite of Simple Tools here:</b>
         https://www.simplemobiletools.com
-
-        <b>Standalone website of Simple Calendar Pro:</b>
-        https://www.simplemobiletools.com/calendar
 
         <b>Facebook:</b>
         https://www.facebook.com/simplemobiletools

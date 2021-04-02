@@ -1,37 +1,31 @@
 package com.simplemobiletools.calendar.pro.fragments
 
+import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.simplemobiletools.calendar.pro.R
+import com.simplemobiletools.calendar.pro.activities.EventActivity
 import com.simplemobiletools.calendar.pro.activities.MainActivity
 import com.simplemobiletools.calendar.pro.activities.SimpleActivity
 import com.simplemobiletools.calendar.pro.adapters.EventListAdapter
 import com.simplemobiletools.calendar.pro.extensions.*
+import com.simplemobiletools.calendar.pro.helpers.EVENT_ID
+import com.simplemobiletools.calendar.pro.helpers.EVENT_OCCURRENCE_TS
 import com.simplemobiletools.calendar.pro.helpers.Formatter
 import com.simplemobiletools.calendar.pro.models.Event
 import com.simplemobiletools.calendar.pro.models.ListEvent
-import com.simplemobiletools.calendar.pro.models.ListItem
-import com.simplemobiletools.calendar.pro.models.ListSection
 import com.simplemobiletools.commons.extensions.*
 import com.simplemobiletools.commons.helpers.MONTH_SECONDS
 import com.simplemobiletools.commons.interfaces.RefreshRecyclerViewListener
-import com.simplemobiletools.commons.views.MyLinearLayoutManager
 import com.simplemobiletools.commons.views.MyRecyclerView
 import kotlinx.android.synthetic.main.fragment_event_list.view.*
 import org.joda.time.DateTime
 import java.util.*
 
 class EventListFragment : MyFragmentHolder(), RefreshRecyclerViewListener {
-    private val NOT_UPDATING = 0
-    private val UPDATE_TOP = 1
-    private val UPDATE_BOTTOM = 2
-
     private var FETCH_INTERVAL = 3 * MONTH_SECONDS
     private var MIN_EVENTS_TRESHOLD = 30
 
@@ -39,8 +33,6 @@ class EventListFragment : MyFragmentHolder(), RefreshRecyclerViewListener {
     private var minFetchedTS = 0L
     private var maxFetchedTS = 0L
     private var wereInitialEventsAdded = false
-    private var hasBeenScrolled = false
-    private var bottomItemAtRefresh: ListItem? = null
 
     private var use24HourFormat = false
 
@@ -86,21 +78,21 @@ class EventListFragment : MyFragmentHolder(), RefreshRecyclerViewListener {
 
         context!!.eventsHelper.getEvents(minFetchedTS, maxFetchedTS) {
             if (it.size >= MIN_EVENTS_TRESHOLD) {
-                receivedEvents(it, NOT_UPDATING)
+                receivedEvents(it, false)
             } else {
                 if (!wereInitialEventsAdded) {
                     maxFetchedTS += FETCH_INTERVAL
                 }
                 context!!.eventsHelper.getEvents(minFetchedTS, maxFetchedTS) {
                     mEvents = it
-                    receivedEvents(mEvents, NOT_UPDATING, !wereInitialEventsAdded)
+                    receivedEvents(mEvents, false, !wereInitialEventsAdded)
                 }
             }
             wereInitialEventsAdded = true
         }
     }
 
-    private fun receivedEvents(events: ArrayList<Event>, updateStatus: Int, forceRecreation: Boolean = false) {
+    private fun receivedEvents(events: ArrayList<Event>, scrollAfterUpdating: Boolean, forceRecreation: Boolean = false) {
         if (context == null || activity == null) {
             return
         }
@@ -117,40 +109,24 @@ class EventListFragment : MyFragmentHolder(), RefreshRecyclerViewListener {
             if (currAdapter == null || forceRecreation) {
                 EventListAdapter(activity as SimpleActivity, listItems, true, this, mView.calendar_events_list) {
                     if (it is ListEvent) {
-                        context?.editEvent(it)
+                        editEvent(it)
                     }
                 }.apply {
                     mView.calendar_events_list.adapter = this
                 }
 
-                mView.calendar_events_list.scheduleLayoutAnimation()
                 mView.calendar_events_list.endlessScrollListener = object : MyRecyclerView.EndlessScrollListener {
                     override fun updateTop() {
                         fetchPreviousPeriod()
                     }
 
                     override fun updateBottom() {
-                        fetchNextPeriod()
+                        fetchNextPeriod(true)
                     }
                 }
-
-                mView.calendar_events_list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                        super.onScrollStateChanged(recyclerView, newState)
-                        if (!hasBeenScrolled) {
-                            hasBeenScrolled = true
-                            activity?.invalidateOptionsMenu()
-                        }
-                    }
-                })
             } else {
                 (currAdapter as EventListAdapter).updateListItems(listItems)
-                if (updateStatus == UPDATE_TOP) {
-                    val item = listItems.indexOfFirst { it == bottomItemAtRefresh }
-                    if (item != -1) {
-                        mView.calendar_events_list.scrollToPosition(item)
-                    }
-                } else if (updateStatus == UPDATE_BOTTOM) {
+                if (scrollAfterUpdating) {
                     mView.calendar_events_list.smoothScrollBy(0, context!!.resources.getDimension(R.dimen.endless_scroll_move_height).toInt())
                 }
             }
@@ -166,24 +142,29 @@ class EventListFragment : MyFragmentHolder(), RefreshRecyclerViewListener {
             mView.calendar_empty_list_placeholder.setTextColor(activity!!.config.textColor)
     }
 
-    private fun fetchPreviousPeriod() {
-        val lastPosition = (mView.calendar_events_list.layoutManager as MyLinearLayoutManager).findLastVisibleItemPosition()
-        bottomItemAtRefresh = (mView.calendar_events_list.adapter as EventListAdapter).listItems[lastPosition]
+    private fun editEvent(event: ListEvent) {
+        Intent(context, EventActivity::class.java).apply {
+            putExtra(EVENT_ID, event.id)
+            putExtra(EVENT_OCCURRENCE_TS, event.startTS)
+            startActivity(this)
+        }
+    }
 
+    private fun fetchPreviousPeriod() {
         val oldMinFetchedTS = minFetchedTS - 1
         minFetchedTS -= FETCH_INTERVAL
         context!!.eventsHelper.getEvents(minFetchedTS, oldMinFetchedTS) {
             mEvents.addAll(0, it)
-            receivedEvents(mEvents, UPDATE_TOP)
+            receivedEvents(mEvents, false)
         }
     }
 
-    private fun fetchNextPeriod() {
+    private fun fetchNextPeriod(scrollAfterUpdating: Boolean) {
         val oldMaxFetchedTS = maxFetchedTS + 1
         maxFetchedTS += FETCH_INTERVAL
         context!!.eventsHelper.getEvents(oldMaxFetchedTS, maxFetchedTS) {
             mEvents.addAll(it)
-            receivedEvents(mEvents, UPDATE_BOTTOM)
+            receivedEvents(mEvents, scrollAfterUpdating)
         }
     }
 
@@ -191,17 +172,7 @@ class EventListFragment : MyFragmentHolder(), RefreshRecyclerViewListener {
         checkEvents()
     }
 
-    override fun goToToday() {
-        val listItems = context!!.getEventListItems(mEvents)
-        val firstNonPastSectionIndex = listItems.indexOfFirst { it is ListSection && !it.isPastSection }
-        if (firstNonPastSectionIndex != -1) {
-            (mView.calendar_events_list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(firstNonPastSectionIndex, 0)
-            mView.calendar_events_list.onGlobalLayout {
-                hasBeenScrolled = false
-                activity?.invalidateOptionsMenu()
-            }
-        }
-    }
+    override fun goToToday() {}
 
     override fun showGoToDateDialog() {}
 
@@ -209,29 +180,11 @@ class EventListFragment : MyFragmentHolder(), RefreshRecyclerViewListener {
         checkEvents()
     }
 
-    override fun shouldGoToTodayBeVisible() = hasBeenScrolled
+    override fun shouldGoToTodayBeVisible() = false
 
     override fun updateActionBarTitle() {
         (activity as? MainActivity)?.updateActionBarTitle(getString(R.string.app_launcher_name))
     }
 
     override fun getNewEventDayCode() = Formatter.getTodayCode()
-
-    override fun printView() {
-        mView.apply {
-            if (calendar_events_list.isGone()) {
-                context.toast(R.string.no_items_found)
-                return@apply
-            }
-
-            (calendar_events_list.adapter as? EventListAdapter)?.togglePrintMode()
-            Handler().postDelayed({
-                context!!.printBitmap(calendar_events_list.getViewBitmap())
-
-                Handler().postDelayed({
-                    (calendar_events_list.adapter as? EventListAdapter)?.togglePrintMode()
-                }, 1000)
-            }, 1000)
-        }
-    }
 }

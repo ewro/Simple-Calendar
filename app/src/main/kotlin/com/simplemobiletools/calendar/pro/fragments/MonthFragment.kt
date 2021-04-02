@@ -11,8 +11,6 @@ import androidx.fragment.app.Fragment
 import com.simplemobiletools.calendar.pro.R
 import com.simplemobiletools.calendar.pro.activities.MainActivity
 import com.simplemobiletools.calendar.pro.extensions.config
-import com.simplemobiletools.calendar.pro.extensions.getViewBitmap
-import com.simplemobiletools.calendar.pro.extensions.printBitmap
 import com.simplemobiletools.calendar.pro.helpers.Config
 import com.simplemobiletools.calendar.pro.helpers.DAY_CODE
 import com.simplemobiletools.calendar.pro.helpers.Formatter
@@ -21,8 +19,6 @@ import com.simplemobiletools.calendar.pro.interfaces.MonthlyCalendar
 import com.simplemobiletools.calendar.pro.interfaces.NavigationListener
 import com.simplemobiletools.calendar.pro.models.DayMonthly
 import com.simplemobiletools.commons.extensions.applyColorFilter
-import com.simplemobiletools.commons.extensions.beGone
-import com.simplemobiletools.commons.extensions.beVisible
 import kotlinx.android.synthetic.main.fragment_month.view.*
 import kotlinx.android.synthetic.main.top_navigation.view.*
 import org.joda.time.DateTime
@@ -47,7 +43,7 @@ class MonthFragment : Fragment(), MonthlyCalendar {
         mRes = resources
         mPackageName = activity!!.packageName
         mHolder = view.month_calendar_holder
-        mDayCode = arguments!!.getString(DAY_CODE)!!
+        mDayCode = arguments!!.getString(DAY_CODE)
         mConfig = context!!.config
         storeStateVariables()
 
@@ -142,24 +138,8 @@ class MonthFragment : Fragment(), MonthlyCalendar {
     }
 
     private fun updateDays(days: ArrayList<DayMonthly>) {
-        mHolder.month_view_wrapper.updateDays(days, true) {
+        mHolder.month_view_wrapper.updateDays(days) {
             (activity as MainActivity).openDayFromMonthly(Formatter.getDateTimeFromCode(it.code))
-        }
-    }
-
-    fun printCurrentView() {
-        mHolder.apply {
-            top_left_arrow.beGone()
-            top_right_arrow.beGone()
-            top_value.setTextColor(resources.getColor(R.color.theme_light_text_color))
-            month_view_wrapper.togglePrintMode()
-
-            context!!.printBitmap(month_calendar_holder.getViewBitmap())
-
-            top_left_arrow.beVisible()
-            top_right_arrow.beVisible()
-            top_value.setTextColor(mConfig.textColor)
-            month_view_wrapper.togglePrintMode()
         }
     }
 }

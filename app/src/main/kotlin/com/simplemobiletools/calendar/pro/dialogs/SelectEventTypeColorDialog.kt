@@ -10,7 +10,6 @@ import com.simplemobiletools.calendar.pro.extensions.calDAVHelper
 import com.simplemobiletools.calendar.pro.extensions.config
 import com.simplemobiletools.calendar.pro.models.EventType
 import com.simplemobiletools.commons.dialogs.ColorPickerDialog
-import com.simplemobiletools.commons.extensions.getCornerRadius
 import com.simplemobiletools.commons.extensions.setFillWithStroke
 import com.simplemobiletools.commons.extensions.setupDialogStuff
 import kotlinx.android.synthetic.main.dialog_select_event_type_color.view.*
@@ -35,13 +34,13 @@ class SelectEventTypeColorDialog(val activity: Activity, val eventType: EventTyp
 
         wasInit = true
         dialog = AlertDialog.Builder(activity)
-            .create().apply {
-                activity.setupDialogStuff(view, this)
+                .create().apply {
+                    activity.setupDialogStuff(view, this)
 
-                if (colors.isEmpty()) {
-                    showCustomColorPicker()
+                    if (colors.isEmpty()) {
+                        showCustomColorPicker()
+                    }
                 }
-            }
     }
 
     private fun addRadioButton(colorKey: Int, color: Int) {
@@ -52,7 +51,7 @@ class SelectEventTypeColorDialog(val activity: Activity, val eventType: EventTyp
             id = colorKey
         }
 
-        view.dialog_radio_color.setFillWithStroke(color, activity.config.backgroundColor, activity.getCornerRadius())
+        view.dialog_radio_color.setFillWithStroke(color, activity.config.backgroundColor)
         view.setOnClickListener {
             viewClicked(colorKey)
         }
@@ -68,7 +67,7 @@ class SelectEventTypeColorDialog(val activity: Activity, val eventType: EventTyp
     }
 
     private fun showCustomColorPicker() {
-        ColorPickerDialog(activity, eventType.color) { wasPositivePressed, color ->
+        ColorPickerDialog(activity, activity.config.primaryColor) { wasPositivePressed, color ->
             if (wasPositivePressed) {
                 callback(color)
             }

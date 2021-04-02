@@ -14,6 +14,4 @@ abstract class MyFragmentHolder : Fragment() {
     abstract fun updateActionBarTitle()
 
     abstract fun getNewEventDayCode(): String
-
-    abstract fun printView()
 }

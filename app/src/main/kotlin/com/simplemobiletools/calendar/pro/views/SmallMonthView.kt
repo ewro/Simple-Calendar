@@ -8,11 +8,10 @@ import android.util.AttributeSet
 import android.view.View
 import com.simplemobiletools.calendar.pro.R
 import com.simplemobiletools.calendar.pro.extensions.config
-import com.simplemobiletools.calendar.pro.helpers.isWeekend
+import com.simplemobiletools.calendar.pro.helpers.MEDIUM_ALPHA
 import com.simplemobiletools.calendar.pro.models.DayYearly
 import com.simplemobiletools.commons.extensions.adjustAlpha
 import com.simplemobiletools.commons.extensions.getAdjustedPrimaryColor
-import com.simplemobiletools.commons.helpers.MEDIUM_ALPHA
 import java.util.*
 
 // used for displaying months at Yearly view
@@ -21,12 +20,8 @@ class SmallMonthView(context: Context, attrs: AttributeSet, defStyle: Int) : Vie
     private var todayCirclePaint: Paint
     private var dayWidth = 0f
     private var textColor = 0
-    private var redTextColor = 0
     private var days = 31
     private var isLandscape = false
-    private var highlightWeekends = false
-    private var isSundayFirst = false
-    private var isPrintVersion = false
     private var mEvents: ArrayList<DayYearly>? = null
 
     var firstDay = 0
@@ -46,9 +41,9 @@ class SmallMonthView(context: Context, attrs: AttributeSet, defStyle: Int) : Vie
 
     init {
         val attributes = context.theme.obtainStyledAttributes(
-            attrs,
-            R.styleable.SmallMonthView,
-            0, 0)
+                attrs,
+                R.styleable.SmallMonthView,
+                0, 0)
 
         try {
             days = attributes.getInt(R.styleable.SmallMonthView_days, 31)
@@ -58,9 +53,6 @@ class SmallMonthView(context: Context, attrs: AttributeSet, defStyle: Int) : Vie
 
         val baseColor = context.config.textColor
         textColor = baseColor.adjustAlpha(MEDIUM_ALPHA)
-        redTextColor = context.resources.getColor(R.color.red_text).adjustAlpha(MEDIUM_ALPHA)
-        highlightWeekends = context.config.highlightWeekends
-        isSundayFirst = context.config.isSundayFirst
 
         paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = textColor
@@ -87,12 +79,11 @@ class SmallMonthView(context: Context, attrs: AttributeSet, defStyle: Int) : Vie
         for (y in 1..6) {
             for (x in 1..7) {
                 if (curId in 1..days) {
-                    val paint = getPaint(curId, x, highlightWeekends)
-                    canvas.drawText(curId.toString(), x * dayWidth - (dayWidth / 4), y * dayWidth, paint)
+                    canvas.drawText(curId.toString(), x * dayWidth, y * dayWidth, getPaint(curId))
 
-                    if (curId == todaysId && !isPrintVersion) {
+                    if (curId == todaysId) {
                         val dividerConstant = if (isLandscape) 6 else 4
-                        canvas.drawCircle(x * dayWidth - dayWidth / 2, y * dayWidth - dayWidth / dividerConstant, dayWidth * 0.41f, todayCirclePaint)
+                        canvas.drawCircle(x * dayWidth - dayWidth / dividerConstant, y * dayWidth - dayWidth / dividerConstant, dayWidth * 0.41f, todayCirclePaint)
                     }
                 }
                 curId++
@@ -100,30 +91,14 @@ class SmallMonthView(context: Context, attrs: AttributeSet, defStyle: Int) : Vie
         }
     }
 
-    private fun getPaint(curId: Int, weekDay: Int, highlightWeekends: Boolean): Paint {
+    private fun getPaint(curId: Int): Paint {
         val colors = mEvents?.get(curId)?.eventColors ?: HashSet()
         if (colors.isNotEmpty()) {
             val curPaint = Paint(paint)
             curPaint.color = colors.first()
             return curPaint
-        } else if (highlightWeekends && isWeekend(weekDay - 1, isSundayFirst)) {
-            val curPaint = Paint(paint)
-            curPaint.color = redTextColor
-            return curPaint
         }
 
         return paint
-    }
-
-    fun togglePrintMode() {
-        isPrintVersion = !isPrintVersion
-        textColor = if (isPrintVersion) {
-            resources.getColor(R.color.theme_light_text_color)
-        } else {
-            context.config.textColor.adjustAlpha(MEDIUM_ALPHA)
-        }
-
-        paint.color = textColor
-        invalidate()
     }
 }

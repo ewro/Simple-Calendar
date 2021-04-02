@@ -32,8 +32,4 @@ class MyMonthPagerAdapter(fm: FragmentManager, private val mCodes: List<String>,
             mFragments[pos + i]?.updateCalendar()
         }
     }
-
-    fun printCurrentView(pos: Int) {
-        mFragments[pos].printCurrentView()
-    }
 }
